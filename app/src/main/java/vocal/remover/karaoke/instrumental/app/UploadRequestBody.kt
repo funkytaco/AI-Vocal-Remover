@@ -14,7 +14,7 @@ class UploadRequestBody(
         private val callback: UploadCallback
 ) : RequestBody() {
 
-    override fun contentType() = MediaType.parse("$contentType/*")
+    override fun contentType() = MediaType.parse("$contentType/mpeg")
 
     override fun contentLength() = file.length()
 

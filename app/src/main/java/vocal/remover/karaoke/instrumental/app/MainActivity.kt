@@ -2,13 +2,12 @@ package vocal.remover.karaoke.instrumental.app
 
 
 import android.app.Activity
-import android.content.ContentResolver
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
-import android.provider.OpenableColumns
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -25,6 +24,7 @@ import java.io.FileOutputStream
 class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
     var binding: ActivityMainBinding? = null
     private var selectedImageUri: Uri? = null
+    private lateinit var fileName: String;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,13 +36,27 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
 
         binding!!.imageView.setOnClickListener({ v -> openImageChooser() })
         binding!!.buttonUpload.setOnClickListener({ v -> uploadImage() })
+        binding!!.buttonProcess.setOnClickListener({v-> processImage()})
+    }
+
+    private fun processImage() {
+        MyAPI().processMp3(fileName).enqueue(object : Callback<ProcessMp3Response> {
+            override fun onFailure(call: Call<ProcessMp3Response>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "Failed; "+ t.message, Toast.LENGTH_LONG).show();
+            }
+
+            override fun onResponse(call: Call<ProcessMp3Response>, response: Response<ProcessMp3Response>) {
+
+                Toast.makeText(this@MainActivity, "Successful"+ response.body()?.message, Toast.LENGTH_LONG).show();
+            }
+        })
     }
 
     private fun openImageChooser() {
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        val mimeTypes = arrayOf("image/jpeg", "image/png")
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "audio/*"
+        val mimeTypes = arrayOf("audio/mpeg", "audio/mp3")
+    //    intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
         startActivityForResult(intent, 101)
     }
 
@@ -70,21 +84,23 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
 
         val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
         val file = File(cacheDir, contentResolver.getFileName(selectedImageUri!!))
+        fileName = file.name
         val outputStream = FileOutputStream(file)
         inputStream.copyTo(outputStream)
 
         binding?.progressBar?.progress = 0
-        val body = UploadRequestBody(file, "image", this)
+        val body = UploadRequestBody(file, "audio", this)
         MyAPI().uploadImage(
                 MultipartBody.Part.createFormData(
-                        "image",
+                        "fileName",
                         file.name,
                         body
                 ),
                 RequestBody.create(MediaType.parse("multipart/form-data"), "json")
         ).enqueue(object : Callback<UploadResponse> {
             override fun onFailure(call: Call<UploadResponse>, t: Throwable) {
-                binding?.layoutRoot?.snackbar(t.message!!)
+                Toast.makeText(this@MainActivity, "Hellfso ${t.message}", Toast.LENGTH_LONG).show();
+              //  binding?.layoutRoot?.snackbar(t.message!!)
                 binding?.progressBar?.progress = 0
             }
 
@@ -92,8 +108,10 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
                     call: Call<UploadResponse>,
                     response: Response<UploadResponse>
             ) {
+              //  Toast.makeText(this@MainActivity, "Hello ${response.body()?.message}", Toast.LENGTH_LONG).show();
+                binding?.tvmessage?.setText(response.body()?.file_path)
                 response.body()?.let {
-                    binding?.layoutRoot?.snackbar(it.message)
+                    binding?.layoutRoot?.snackbar(it.file_path)
                     binding?.progressBar?.progress = 100
                 }
             }
@@ -109,5 +127,6 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
         binding?.progressBar?.progress = percentage
     }
 }
+
 
 
