@@ -2,6 +2,9 @@ package vocal.remover.karaoke.instrumental.app.fragments
 
 import android.app.Activity
 import android.content.Intent
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.MediaPlayer.OnPreparedListener
 import android.net.Uri
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
@@ -49,8 +52,19 @@ class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
 
             override fun onResponse(call: Call<ProcessMp3Response>, response: Response<ProcessMp3Response>) {
 
-                Toast.makeText(activity, "Successful"+ response.body()?.message, Toast.LENGTH_LONG).show();
+                Toast.makeText(activity, "Successful" + response.body()?.message, Toast.LENGTH_LONG).show();
+                binding.tvmessage.text = response.body()?.file_path
                 dialog.hideProgress()
+
+                //val mediaPlayer: MediaPlayer = MediaPlayer.create(activity, "https://instrumentals.com.ng/wp-content/uploads/2020/07/DNA-TYPE-INSTRUMENTALPROD-BY-MM-MIZZY.mp3");
+                //  val mediaPlayer: MediaPlayer = MediaPlayer.create(activity, Uri.parse(response.body()?.file_path));
+
+                val mp = MediaPlayer();
+
+                mp.setDataSource("https://instrumentals.com.ng/wp-content/uploads/2020/07/DNA-TYPE-INSTRUMENTALPROD-BY-MM-MIZZY.mp3");//Write your location here
+                mp.prepare();
+                mp.start();
+
             }
         })
     }
