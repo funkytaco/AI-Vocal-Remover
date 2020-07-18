@@ -1,19 +1,30 @@
 package vocal.remover.karaoke.instrumental.app.fragments
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
-import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.MediaPlayer.OnPreparedListener
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Message
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.Button
+import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -22,48 +33,124 @@ import retrofit2.Callback
 import retrofit2.Response
 import vocal.remover.karaoke.instrumental.app.*
 import vocal.remover.karaoke.instrumental.app.databinding.FragmentHomeBinding
+import vocal.remover.karaoke.instrumental.app.models.AudioResultResponse
+import vocal.remover.karaoke.instrumental.app.models.UploadResponse
+import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils.showCustomDialog
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
+import java.lang.Exception
 
-class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
+public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     lateinit var binding: FragmentHomeBinding
     private var selectedMp3Uri: Uri? = null
     val dialog = CustomProgressDialog.getInstance();
+    lateinit var instrumentalLink: String
+    lateinit var vocalLink: String
+    lateinit var navController: NavController
+    var mp: MediaPlayer? = null
+    var totalTime: Int = 0
+    lateinit var r: Runnable
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view: View = binding.root
+        navController = activity?.findNavController(R.id.nav_host_fragment)!!
+
+        initAds()
 
         binding.btnSelectMp3.setOnClickListener { selectMp3File() }
-        binding.btnUploadMp3.setOnClickListener { uploadImage() }
+        binding.btnExtractMp3.setOnClickListener { uploadMp3() }
         binding.btnProcessMp3.setOnClickListener { processMp3() }
+        binding.btnViewResults.setOnClickListener { viewResults() }
+        binding.btnPlay.setOnClickListener { playSelectedSong() }
 
         return view
     }
 
+
+
+    private fun playSelectedSong() {
+
+        if (mp!!.isPlaying) {
+            //pause
+            mp?.pause()
+            binding.btnPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
+        } else {
+            //start
+            mp?.start()
+            binding.btnPlay.setBackgroundResource(R.drawable.ic_baseline_pause_circle_filled_24)
+        }
+
+    }
+
+    private fun viewResults() {
+
+        stopAndReleaseMediaPlayer()
+
+        val bundle = Bundle()
+        Log.e("TAG", "i am putting " + instrumentalLink + vocalLink)
+        bundle.putString("instrumental", instrumentalLink)
+        bundle.putString("vocal", vocalLink)
+        bundle.putString("mp3_name", getMp3FileName(selectedMp3Uri))
+
+        //(String url, String dirPath, String fileName)
+        navController.navigate(R.id.action_homeFragment_to_playerFragment, bundle)
+    }
+
+    private fun stopAndReleaseMediaPlayer() {
+        if (this::r.isInitialized) {
+            handler.removeCallbacks(r)
+        }
+        if (mp != null) {
+            mp?.stop()
+            mp?.release()
+            mp = null
+        }
+
+
+    }
+
     private fun processMp3() {
-        MyAPI().processMp3(getFormattedMp3FileName(selectedMp3Uri)).enqueue(object : Callback<ProcessMp3Response> {
-            override fun onFailure(call: Call<ProcessMp3Response>, t: Throwable) {
-                Toast.makeText(activity, "Failed; "+ t.message, Toast.LENGTH_LONG).show();
+        MyAPI().processMp3(getFormattedMp3FileName(selectedMp3Uri)).enqueue(object : Callback<AudioResultResponse> {
+            override fun onFailure(call: Call<AudioResultResponse>, t: Throwable) {
+                Toast.makeText(activity, "Failed; " + t.message, Toast.LENGTH_LONG).show();
+                dialog.hideProgress()
+                showCustomDialog(activity, "Error: " + t.message)
             }
 
-            override fun onResponse(call: Call<ProcessMp3Response>, response: Response<ProcessMp3Response>) {
-
-                Toast.makeText(activity, "Successful" + response.body()?.message, Toast.LENGTH_LONG).show();
+            override fun onResponse(call: Call<AudioResultResponse>, response: Response<AudioResultResponse>) {
+                Log.e("TAG", "onResponse: " + getFormattedMp3FileName(selectedMp3Uri))
+                // Toast.makeText(activity, "Successful" + response.body()?.message, Toast.LENGTH_LONG).show();
+                //  Toast.makeText(activity, "Successful" + response.body()?.message, Toast.LENGTH_LONG).show();
+                binding?.layoutRoot?.snackbar("Mp3 Extracted Successfully!!")
                 binding.tvmessage.text = response.body()?.file_path
+                instrumentalLink = response.body()?.instrumental_path.toString()
+                vocalLink = response.body()?.vocal_path.toString()
+                binding.btnViewResults.visibility = View.VISIBLE
                 dialog.hideProgress()
 
-                //val mediaPlayer: MediaPlayer = MediaPlayer.create(activity, "https://instrumentals.com.ng/wp-content/uploads/2020/07/DNA-TYPE-INSTRUMENTALPROD-BY-MM-MIZZY.mp3");
-                //  val mediaPlayer: MediaPlayer = MediaPlayer.create(activity, Uri.parse(response.body()?.file_path));
-
-                val mp = MediaPlayer();
-
-                mp.setDataSource("https://instrumentals.com.ng/wp-content/uploads/2020/07/DNA-TYPE-INSTRUMENTALPROD-BY-MM-MIZZY.mp3");//Write your location here
-                mp.prepare();
-                mp.start();
+                val player = MediaPlayer()
+                try {
+                    //change with setDataSource(Context,Uri);
+                    context?.let { player.setDataSource(it, Uri.parse(response.body()?.instrumental_path)) }
+                    player.prepareAsync()
+                    player.setOnPreparedListener(OnPreparedListener { //mp.start();
+                        //     player.start()
+                    })
+                } catch (e: IllegalArgumentException) {
+                    e.printStackTrace()
+                    Log.e("TAG", "onResponse: Error" + e.message)
+                } catch (e: IllegalStateException) {
+                    e.printStackTrace()
+                    Log.e("TAG", "onResponse: Error" + e.message)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    Log.e("TAG", "onResponse: Error" + e.message)
+                }
 
             }
         })
@@ -85,21 +172,81 @@ class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
                 REQUEST_CODE_PICK_IMAGE -> {
                     selectedMp3Uri = data?.data
                     binding.tvFileName.text = getMp3FileName(selectedMp3Uri)
-                    binding.btnUploadMp3.visibility = View.VISIBLE
+                    binding.btnExtractMp3.visibility = View.VISIBLE
+                    binding.tvFileName.visibility = View.VISIBLE
+                    binding.tvFileNameTitle.visibility = View.VISIBLE
+                    binding.lyMp3Details.visibility = View.VISIBLE
+
+                    initMediaPlayer(selectedMp3Uri)
+                    playSelectedSong()
                 }
             }
         }
 
     }
 
+    private fun initMediaPlayer(selectedMp3Uri: Uri?) {
+        stopPlaying()
+        mp = MediaPlayer.create(activity, selectedMp3Uri)
+        mp?.setVolume(0.5f, 0.5f)
+        totalTime = mp?.duration!!
+
+        binding.playerSeekbar.max = totalTime
+        binding.playerSeekbar.setOnSeekBarChangeListener(
+                object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                        if (fromUser) {
+                            mp?.seekTo(progress)
+                        }
+                    }
+
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+                    }
+
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+                    }
+
+                }
+        )
+
+        r = Runnable {
+            while (mp != null) {
+                try {
+                    var msg = Message()
+                    msg.what = mp?.currentPosition!!
+                    handler.sendMessage(msg)
+                    Thread.sleep(1000)
+                } catch (e: Exception) {
+                    Log.e("TAG", "initMediaPlayer: "+ e.message )
+                }
+            }
+        }
 
 
-    private fun uploadImage() {
+        Thread(r).start()
+
+
+    }
+
+    @SuppressLint("HandlerLeak")
+    var handler = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            var currentPosition = msg.what
+
+            //update the seekbar
+            binding.playerSeekbar.progress = currentPosition
+        }
+    }
+
+
+    private fun uploadMp3() {
         if (selectedMp3Uri == null) {
             binding?.layoutRoot?.snackbar("Select an Mp3 File First")
             return
         }
-        dialog.ShowProgress(activity,"Uploading Mp3..",true);
+        dialog.ShowProgress(activity, "Uploading Mp3..", false);
 
         val parcelFileDescriptor: ParcelFileDescriptor =
                 activity?.contentResolver?.openFileDescriptor(selectedMp3Uri!!, "r", null) ?: return
@@ -120,22 +267,28 @@ class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
                 RequestBody.create(MediaType.parse("multipart/form-data"), "json")
         ).enqueue(object : Callback<UploadResponse> {
             override fun onFailure(call: Call<UploadResponse>, t: Throwable) {
-                Toast.makeText(activity, "Hellfso ${t.message}", Toast.LENGTH_LONG).show();
+
+                if (t.message?.contains("Filed To Connect", true)!!) {
+                    Toast.makeText(activity, "Upload Error: Internet Connection not Available", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(activity, "Upload Error: ${t.message}", Toast.LENGTH_LONG).show();
+                }
+
                 //  binding?.layoutRoot?.snackbar(t.message!!)
                 binding?.progressBar?.progress = 0
+                dialog.hideProgress()
+                showTimeOutDialog("Error: " + t.message)
             }
 
-            override fun onResponse(
-                    call: Call<UploadResponse>,
-                    response: Response<UploadResponse>
-            ) {
+            override fun onResponse(call: Call<UploadResponse>, response: Response<UploadResponse>) {
                 //  Toast.makeText(this@MainActivity, "Hello ${response.body()?.message}", Toast.LENGTH_LONG).show();
                 binding?.tvmessage?.setText(response.body()?.file_path)
                 response.body()?.let {
-                    binding?.layoutRoot?.snackbar(it.file_path)
+                    //    binding?.layoutRoot?.snackbar(it.file_path)
+                    binding?.layoutRoot?.snackbar("Upload Complete!!")
                     binding?.progressBar?.progress = 100
                     dialog.hideProgress()
-                    dialog.ShowProgress(activity,"Processing Mp3..",true);
+                    dialog.ShowProgress(activity, "Processing Mp3..  ", false);
                     processMp3()
                 }
             }
@@ -147,9 +300,11 @@ class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         val file = File(activity?.cacheDir, activity?.contentResolver?.getFileName(selectedMp3Uri!!))
         return file.name
     }
+
     private fun getFormattedMp3FileName(selectedMp3Uri: Uri?): String? {
-        val file = File(activity?.cacheDir, activity?.contentResolver?.getFileName(selectedMp3Uri!!))
-        return file.name.replace(" ", "")
+
+        var file = File(activity?.cacheDir, activity?.contentResolver?.getFileName(selectedMp3Uri!!))
+        return file.name.replace("[^a-zA-Z]".toRegex(), "")
 
     }
 
@@ -161,4 +316,39 @@ class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     override fun onProgressUpdate(percentage: Int) {
         binding?.progressBar?.progress = percentage
     }
+
+
+    fun showTimeOutDialog(msg: String?) {
+        val dialog = this!!.activity?.let { Dialog(it) }
+        dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog?.setCancelable(true)
+        dialog?.setContentView(R.layout.custom_dialog)
+        val text = dialog?.findViewById<View>(R.id.text_dialog) as TextView
+        text.text = msg
+        val dialogButton = dialog.findViewById<View>(R.id.btn_dialog) as Button
+        dialogButton.setText("Retry")
+        dialogButton.setOnClickListener {
+            uploadMp3()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+
+
+    private fun stopPlaying() {
+        if (mp != null) {
+            mp?.stop()
+            mp?.release()
+            mp = null
+        }
+    }
+
+    private fun initAds() {
+        MobileAds.initialize(activity) {}
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.loadAd(adRequest)
+    }
+
 }

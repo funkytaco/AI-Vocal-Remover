@@ -6,28 +6,17 @@
     app:startDestination="@id/homeFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="vocal.remover.karaoke.instrumental.app.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/SecondFragment"
-        android:name="vocal.remover.karaoke.instrumental.app.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
-        <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
-    </fragment>
-    <fragment
         android:id="@+id/homeFragment"
         android:name="vocal.remover.karaoke.instrumental.app.fragments.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_playerFragment"
+            app:destination="@id/playerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="vocal.remover.karaoke.instrumental.app.fragments.PlayerFragment"
+        android:label="fragment_player"
+        tools:layout="@layout/fragment_player" />
 </navigation>

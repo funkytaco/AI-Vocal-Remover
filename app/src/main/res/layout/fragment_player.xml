@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.PlayerFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/adView"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <com.chibde.visualizer.LineBarVisualizer
+                android:id="@+id/visualizer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="20dp"
+                android:paddingBottom="20dp"
+                android:orientation="vertical"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/colorPrimary">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="INSTRUMENTAL"
+                        android:textAlignment="center"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                   >
+
+                    <Button
+                        android:id="@+id/btn_instrumental_play"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/ic_baseline_play_circle_filled_24" />
+
+                    <SeekBar
+                        android:id="@+id/instrumental_seekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical" />
+
+                </LinearLayout>
+                <Button
+                    android:id="@+id/btn_instrumental_download"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_extract"
+                    android:layout_marginTop="20dp"
+                    android:text="Download"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="20dp"
+                android:paddingBottom="20dp"
+                android:orientation="vertical"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/colorPrimary">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="VOCAL"
+                        android:textAlignment="center"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        >
+
+                        <Button
+                            android:id="@+id/btn_vocal_play"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/ic_baseline_play_circle_filled_24" />
+
+                        <SeekBar
+                            android:id="@+id/vocal_seekbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical" />
+
+                    </LinearLayout>
+                    <Button
+                        android:id="@+id/btn_vocal_download"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/btn_extract"
+                        android:layout_marginTop="20dp"
+                        android:text="Download"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_buffering"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="Buffering"
+                android:textSize="20sp"
+                android:layout_marginBottom="30dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:orientation="vertical"
+            android:paddingHorizontal="15dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_play_instrumental"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="7dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_extract"
+                    android:text="Play \nInstrumental" />
+
+                <Button
+                    android:id="@+id/btn_play_vocal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="7dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_extract"
+                    android:text="Play \nVocal" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_download_instrumental"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="7dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_extract"
+                    android:text="Download \nInstrumental" />
+
+                <Button
+                    android:id="@+id/btn_download_vocal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="7dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_extract"
+                    android:text="Download \nVocal" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-9562015878942760/9162138254">
+    </com.google.android.gms.ads.AdView>
+</RelativeLayout>

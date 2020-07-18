@@ -16,6 +16,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import vocal.remover.karaoke.instrumental.app.databinding.ActivityMainBinding
+import vocal.remover.karaoke.instrumental.app.models.AudioResultResponse
+import vocal.remover.karaoke.instrumental.app.models.UploadResponse
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -40,12 +42,12 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
     }
 
     private fun processImage() {
-        MyAPI().processMp3(fileName).enqueue(object : Callback<ProcessMp3Response> {
-            override fun onFailure(call: Call<ProcessMp3Response>, t: Throwable) {
+        MyAPI().processMp3(fileName).enqueue(object : Callback<AudioResultResponse> {
+            override fun onFailure(call: Call<AudioResultResponse>, t: Throwable) {
                 Toast.makeText(this@MainActivity, "Failed; "+ t.message, Toast.LENGTH_LONG).show();
             }
 
-            override fun onResponse(call: Call<ProcessMp3Response>, response: Response<ProcessMp3Response>) {
+            override fun onResponse(call: Call<AudioResultResponse>, response: Response<AudioResultResponse>) {
 
                 Toast.makeText(this@MainActivity, "Successful"+ response.body()?.message, Toast.LENGTH_LONG).show();
             }
@@ -118,6 +120,12 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
         })
 
     }
+
+
+
+
+
+
 
     companion object {
         const val REQUEST_CODE_PICK_IMAGE = 101

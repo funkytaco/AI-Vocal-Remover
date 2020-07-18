@@ -3,6 +3,7 @@
     package="vocal.remover.karaoke.instrumental.app">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
@@ -11,6 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:name="vocal.remover.karaoke.instrumental.app.utils_java.MyApplication"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".DashboardActivity"
@@ -24,6 +26,10 @@
         <activity android:name=".MainActivity">
 
         </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-9562015878942760~4867670025"/>
     </application>
 
 </manifest>

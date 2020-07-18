@@ -12,7 +12,8 @@
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_above="@+id/adView">
 
 
         <RelativeLayout
@@ -21,28 +22,36 @@
             android:layout_weight="0.3"
             android:background="@color/colorPrimary"
             android:gravity="center">
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:layout_centerHorizontal="true"
-                android:text="VOCAL REMOVER"
-                android:layout_marginTop="34dp"
-                android:textStyle="bold"
-                android:textSize="20sp"
-                android:textAlignment="center"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/white"
-                android:layout_centerHorizontal="true"
-                android:textSize="16sp"
-                android:layout_marginTop="5dp"
-                android:text="Seperate Vocals &amp; Instrumentals From Songs"
 
-                android:layout_below="@+id/tv_title"
-                android:textAlignment="center"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:layout_centerHorizontal="true"
+                    android:text="VOCAL REMOVER"
+                    android:layout_marginTop="34dp"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textAlignment="center"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:layout_centerHorizontal="true"
+                    android:textSize="16sp"
+                    android:layout_marginTop="5dp"
+                    android:text="Seperate Vocals &amp; Instrumentals From Songs"
+
+                    android:layout_below="@+id/tv_title"
+                    android:textAlignment="center"/>
+            </LinearLayout>
+
 
             <!-- Custom Action Bar -->
             <com.airbnb.lottie.LottieAnimationView
@@ -81,28 +90,89 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <Button
+                    android:id="@+id/btn_select_mp3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:background="@drawable/btn_main_bg"
+                    android:paddingVertical="30dp"
+                    android:text="Select Mp3 File"
+                    android:textColor="@color/white" />
+
                 <LinearLayout
                     android:id="@+id/ly_mp3_details"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
+                    android:layout_below="@+id/btn_select_mp3"
+                    android:layout_marginTop="20dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_file_name_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:text="Selected Audio:"
+                        android:textColor="#A6A4A4"
+                        android:textSize="15sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
 
                     <TextView
                         android:id="@+id/tv_file_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
+                        android:text="Mp3 Name: "
+                        android:textColor="@color/colorPrimaryDark"
                         android:textSize="20sp"
-                        android:text="Mp3 Name: " />
+                        android:visibility="gone"
+                        tools:visibility="visible" />
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="5dp"
+                        android:layout_gravity="center_vertical">
+                        <Button
+                            android:id="@+id/btn_play"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/ic_baseline_play_circle_filled_24"/>
+                        <SeekBar
+                            android:id="@+id/player_seekbar"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_gravity="center_vertical"/>
+
+
+                    </LinearLayout>
 
                     <Button
-                        android:id="@+id/btn_upload_mp3"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/btn_extract_mp3"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/btn_extract"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        android:layout_marginTop="10dp"
                         android:text="Extract " />
+
+                    <Button
+                        android:id="@+id/btn_view_results"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/btn_extract"
+                        android:layout_marginTop="15dp"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        android:text="VIEW RESULTS" />
 
                     <TextView
                         android:id="@+id/tvmessage"
@@ -111,19 +181,12 @@
                         android:layout_gravity="center_horizontal"
                         android:fontFamily="sans-serif-light"
                         android:text="Tap to Select Image"
-                        android:textSize="19sp" />
+                        android:textSize="19sp"
+                        android:visibility="gone"/>
                 </LinearLayout>
 
 
-                <Button
-                    android:id="@+id/btn_select_mp3"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:background="@drawable/btn_main_bg"
-                    android:paddingVertical="30dp"
-                    android:text="Select Mp3 File"
-                    android:textColor="@color/white" />
+
 
             </RelativeLayout>
 
@@ -148,5 +211,14 @@
 
     </LinearLayout>
 
-
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-9562015878942760/9162138254">
+    </com.google.android.gms.ads.AdView>
 </RelativeLayout>
