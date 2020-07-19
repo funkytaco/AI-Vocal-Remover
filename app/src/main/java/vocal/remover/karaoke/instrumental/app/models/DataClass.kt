@@ -3,6 +3,7 @@ package vocal.remover.karaoke.instrumental.app.models
 data class UploadResponse(
         val error: Boolean,
         val message: String,
+        val file_name: String,
         val file_path: String
 )
 

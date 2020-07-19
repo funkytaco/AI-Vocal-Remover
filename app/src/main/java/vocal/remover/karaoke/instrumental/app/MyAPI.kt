@@ -9,7 +9,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import vocal.remover.karaoke.instrumental.app.models.AudioResultResponse
 import vocal.remover.karaoke.instrumental.app.models.UploadResponse
+import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils.getUnsafeOkHttpClient
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLSession
 
 
 interface MyAPI {
@@ -23,28 +26,29 @@ interface MyAPI {
     ): Call<UploadResponse>
 
 
-
-    @GET("ProcessM")
+    @POST("ProcessM")
     fun processMp3(@Query("file_name") fileName: String?): Call<AudioResultResponse>
-
 
 
     companion object {
         operator fun invoke(): MyAPI {
             return Retrofit.Builder()
-                    .baseUrl("http://161.35.71.36/")
-                    .client(okHttpClient)
+                    .baseUrl("https://161.35.71.36/")
+                  //  .client(okHttpClient)
+                    .client(getUnsafeOkHttpClient())
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(MyAPI::class.java)
         }
 
         val okHttpClient = OkHttpClient.Builder()
-                .connectTimeout(40, TimeUnit.SECONDS)
+                .connectTimeout(2, TimeUnit.MINUTES)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
+                .hostnameVerifier { s: String, sslSession: SSLSession ->
+                    true
+                }
                 .build()
     }
-
 
 }

@@ -29,6 +29,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import vocal.remover.karaoke.instrumental.app.R
 import vocal.remover.karaoke.instrumental.app.databinding.FragmentPlayerBinding
+import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils
 import java.io.IOException
 
 
@@ -70,13 +71,13 @@ class PlayerFragment : Fragment() {
 
         binding.btnInstrumentalDownload.setOnClickListener {
             if (instrumentalLink != null) {
-                startDownloading(instrumentalLink)
+                startDownloading(instrumentalLink, "INSTRUMENTAL")
             }
         }
 
         binding.btnVocalDownload.setOnClickListener {
             if (vocalLink != null) {
-                startDownloading(vocalLink)
+                startDownloading(vocalLink, "VOCAL")
             }
         }
 
@@ -170,6 +171,7 @@ class PlayerFragment : Fragment() {
 
                         }
                     }
+
                 }
 
 
@@ -228,7 +230,12 @@ class PlayerFragment : Fragment() {
         val lineBarVisualizer: LineBarVisualizer = binding.visualizer
         context?.let { ContextCompat.getColor(it, R.color.colorPrimary) }?.let { lineBarVisualizer.setColor(it) };
         lineBarVisualizer.setDensity(70f);
-        lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
+        try {
+            lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
+        } catch (e : UnsupportedOperationException){
+            Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: "+ e.message )
+        }
+
     }
 
     private fun getMusicDirectoryPath(): String? {
@@ -266,7 +273,7 @@ class PlayerFragment : Fragment() {
     }
 
 
-    private fun startDownloading(link: String) {
+    private fun startDownloading(link: String, type: String) {
         if (link.toString().equals("")) {
             Toast.makeText(activity, "Link Not Found", Toast.LENGTH_LONG).show()
             return
@@ -277,11 +284,11 @@ class PlayerFragment : Fragment() {
         val request = DownloadManager.Request(Uri.parse(link))
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or
                 DownloadManager.Request.NETWORK_MOBILE)
-        request.setTitle("Song Download")
-        request.setDescription("Downloading File...")
+        request.setTitle("AI Vocal Remover Download" )
+        request.setDescription("Downloading "+ type + " of "+ mp3Name)
         request.allowScanningByMediaScanner()
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "/aivocalremover/new_" + mp3Name + ".mp3")
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "/aivocalremover/" + type+ "_" + mp3Name + ".mp3")
 
         //get Download service and enque file
         val manager = activity?.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -289,6 +296,7 @@ class PlayerFragment : Fragment() {
 
         //  showCustomDialog()
         Log.e("TAG", "startDownloading: Finished  downloading")
+        AppUtils.showDownloadingDialog(activity, "File Downloading \n  ")
     }
 
 
@@ -327,6 +335,7 @@ class PlayerFragment : Fragment() {
             instrumentalPlayer?.pause()
             binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
         } else {
+            stopPlayingVocal()
             initVisualizer(instrumentalPlayer!!)
             //start
             instrumentalPlayer!!.start()
@@ -340,6 +349,7 @@ class PlayerFragment : Fragment() {
             vocalPlayer.pause()
             binding.btnVocalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
         } else {
+            stopPlayingInstrumental()
             initVisualizer(vocalPlayer!!)
             //start
             vocalPlayer.start()
@@ -359,15 +369,30 @@ class PlayerFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        stopPlaying()
+        stopPlayingVocal()
+        stopPlayingInstrumental()
     }
 
 
-    private fun stopPlaying() {
+    private fun stopPlayingInstrumental() {
         if (instrumentalPlayer != null) {
-            instrumentalPlayer?.stop()
-            instrumentalPlayer?.release()
-          instrumentalPlayer = null
+            if (instrumentalPlayer!!.isPlaying) {
+                instrumentalPlayer?.pause()
+                binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
+//                instrumentalPlayer?.release()
+            }
+         // instrumentalPlayer = null
+        }
+    }
+    private fun stopPlayingVocal() {
+        if (vocalPlayer != null) {
+            if (vocalPlayer.isPlaying) {
+                vocalPlayer?.pause()
+                binding.btnVocalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
+//                vocalPlayer?.release()
+            }
+
+            // instrumentalPlayer = null
         }
     }
 }
