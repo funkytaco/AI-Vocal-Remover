@@ -51,7 +51,7 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
-        initAds()
+//        initAds()
 
         val vocalLink: String? = arguments?.getString("vocal")
         val instrumentalLink: String? = arguments?.getString("instrumental")
@@ -232,7 +232,7 @@ class PlayerFragment : Fragment() {
         lineBarVisualizer.setDensity(70f);
         try {
             lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
-        } catch (e : UnsupportedOperationException){
+        } catch (e : Exception){
             Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: "+ e.message )
         }
 
