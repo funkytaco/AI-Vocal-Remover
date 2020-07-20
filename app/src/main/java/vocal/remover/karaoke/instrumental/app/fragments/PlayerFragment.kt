@@ -51,7 +51,7 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
-//        initAds()
+        initAds()
 
         val vocalLink: String? = arguments?.getString("vocal")
         val instrumentalLink: String? = arguments?.getString("instrumental")
