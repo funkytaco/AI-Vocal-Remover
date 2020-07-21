@@ -38,6 +38,7 @@ class PlayerFragment : Fragment() {
     lateinit var binding: FragmentPlayerBinding
     lateinit var mp3Name: String
     val PERMISSION_REQUEST_CODE: Int = 111
+    val STORAGE_PERMISSION_REQUEST_CODE: Int = 111
 
     //  val player = MediaPlayer()
     var instrumentalPlayer: MediaPlayer? = MediaPlayer()
@@ -71,13 +72,40 @@ class PlayerFragment : Fragment() {
 
         binding.btnInstrumentalDownload.setOnClickListener {
             if (instrumentalLink != null) {
-                startDownloading(instrumentalLink, "INSTRUMENTAL")
+
+                when {
+                    activity?.let {
+                        ContextCompat.checkSelfPermission(
+                                it,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    } == PackageManager.PERMISSION_GRANTED -> {
+                        startDownloading(instrumentalLink, "INSTRUMENTAL")
+                    } else -> {
+                    // You can directly ask for the permission.
+                   requestStoragePermission()
+                }
+                }
             }
         }
 
         binding.btnVocalDownload.setOnClickListener {
             if (vocalLink != null) {
-                startDownloading(vocalLink, "VOCAL")
+
+                when {
+                    activity?.let {
+                        ContextCompat.checkSelfPermission(
+                                it,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                    } == PackageManager.PERMISSION_GRANTED -> {
+                        startDownloading(vocalLink, "VOCAL")
+                    } else -> {
+                    // You can directly ask for the permission.
+                    requestStoragePermission()
+                }
+                }
+
             }
         }
 
@@ -135,8 +163,8 @@ class PlayerFragment : Fragment() {
             instrumentalPlayer?.prepareAsync()
             instrumentalPlayer?.setOnPreparedListener(MediaPlayer.OnPreparedListener { //mp.start();
                 instrumentalPlayer?.start()
-                Log.e("TAG", "initInstrumentalPlayer: Playing now" )
-                binding.tvBuffering.setText("PLAYING")
+                Log.e("TAG", "initInstrumentalPlayer: Playing now")
+
                 initVisualizer(instrumentalPlayer!!)
                 binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_pause_circle_filled_24)
                 val totalTime = instrumentalPlayer?.duration!!
@@ -177,7 +205,8 @@ class PlayerFragment : Fragment() {
 
                 Thread(instrumentalRunnable).start()
                 instrumentalPlayer?.setOnBufferingUpdateListener(OnBufferingUpdateListener { mp, percent ->
-                    binding.tvBuffering.setText("BUFFERING") })
+
+                })
 
 
                 Log.e("TAG", "playMedialink: start playing")
@@ -194,7 +223,6 @@ class PlayerFragment : Fragment() {
             Log.e("TAG", "onResponse: Error3" + e.message)
         }
     }
-
 
 
     private fun requestPermission() {
@@ -215,12 +243,38 @@ class PlayerFragment : Fragment() {
 //            showInContextUI(...)
                 val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
                 alertBuilder.setCancelable(true)
-                alertBuilder.setMessage("Write calendar permission is necessary to write event!!!")
-                alertBuilder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.WRITE_CALENDAR), PERMISSION_REQUEST_CODE) })
+                alertBuilder.setMessage("Record permission is necessary to display music visualizer!!!")
+                alertBuilder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST_CODE) })
             }
             else -> {
                 // You can directly ask for the permission.
                 requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST_CODE);
+            }
+        }
+
+    }
+
+
+    private fun requestStoragePermission() {
+        when {
+            activity?.let {
+                ContextCompat.checkSelfPermission(
+                        it,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            } == PackageManager.PERMISSION_GRANTED -> {
+
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) -> {
+
+                val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+                alertBuilder.setCancelable(true)
+                alertBuilder.setMessage("Storage permission is necessary to save downloads!!!")
+                alertBuilder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE) })
+            }
+            else -> {
+                // You can directly ask for the permission.
+                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE);
             }
         }
 
@@ -232,8 +286,8 @@ class PlayerFragment : Fragment() {
         lineBarVisualizer.setDensity(70f);
         try {
             lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
-        } catch (e : Exception){
-            Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: "+ e.message )
+        } catch (e: Exception) {
+            Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: " + e.message)
         }
 
     }
@@ -284,11 +338,11 @@ class PlayerFragment : Fragment() {
         val request = DownloadManager.Request(Uri.parse(link))
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or
                 DownloadManager.Request.NETWORK_MOBILE)
-        request.setTitle("AI Vocal Remover Download" )
-        request.setDescription("Downloading "+ type + " of "+ mp3Name)
+        request.setTitle("AI Vocal Remover Download")
+        request.setDescription("Downloading " + type + " of " + mp3Name)
         request.allowScanningByMediaScanner()
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "/aivocalremover/" + type+ "_" + mp3Name + ".mp3")
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "/aivocalremover/" + type + "_" + mp3Name + ".mp3")
 
         //get Download service and enque file
         val manager = activity?.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -381,9 +435,10 @@ class PlayerFragment : Fragment() {
                 binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
 //                instrumentalPlayer?.release()
             }
-         // instrumentalPlayer = null
+            // instrumentalPlayer = null
         }
     }
+
     private fun stopPlayingVocal() {
         if (vocalPlayer != null) {
             if (vocalPlayer.isPlaying) {

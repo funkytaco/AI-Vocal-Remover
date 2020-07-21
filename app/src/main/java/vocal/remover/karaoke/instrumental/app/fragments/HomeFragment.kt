@@ -133,24 +133,24 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
                 binding.btnViewResults.visibility = View.VISIBLE
                 dialog.hideProgress()
 
-                val player = MediaPlayer()
-                try {
-                    //change with setDataSource(Context,Uri);
-                    context?.let { player.setDataSource(it, Uri.parse(response.body()?.instrumental_path)) }
-                    player.prepareAsync()
-                    player.setOnPreparedListener(OnPreparedListener { //mp.start();
-                        //     player.start()
-                    })
-                } catch (e: IllegalArgumentException) {
-                    e.printStackTrace()
-                    Log.e("TAG", "onResponse: Error" + e.message)
-                } catch (e: IllegalStateException) {
-                    e.printStackTrace()
-                    Log.e("TAG", "onResponse: Error" + e.message)
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                    Log.e("TAG", "onResponse: Error" + e.message)
-                }
+//                val player = MediaPlayer()
+//                try {
+//                    //change with setDataSource(Context,Uri);
+//                    context?.let { player.setDataSource(it, Uri.parse(response.body()?.instrumental_path)) }
+//                    player.prepareAsync()
+//                    player.setOnPreparedListener(OnPreparedListener { //mp.start();
+//                        //     player.start()
+//                    })
+//                } catch (e: IllegalArgumentException) {
+//                    e.printStackTrace()
+//                    Log.e("TAG", "onResponse: Error" + e.message)
+//                } catch (e: IllegalStateException) {
+//                    e.printStackTrace()
+//                    Log.e("TAG", "onResponse: Error" + e.message)
+//                } catch (e: IOException) {
+//                    e.printStackTrace()
+//                    Log.e("TAG", "onResponse: Error" + e.message)
+//                }
 
             }
         })

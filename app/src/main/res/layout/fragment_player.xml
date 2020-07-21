@@ -5,23 +5,27 @@
     android:layout_height="match_parent"
     tools:context=".fragments.PlayerFragment">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/adViewContainer">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/adView"
+
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="100dp"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:orientation="vertical">
 
             <com.chibde.visualizer.LineBarVisualizer
                 android:id="@+id/visualizer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"/>
+                android:layout_gravity="center_vertical" />
 
 
         </LinearLayout>
@@ -36,9 +40,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="20dp"
-                android:paddingBottom="20dp"
                 android:orientation="vertical"
-                >
+                android:paddingBottom="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -57,35 +60,36 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="20dp"
                     android:layout_marginTop="20dp"
-                    android:orientation="vertical">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                   >
+                    android:orientation="vertical"
+                    android:paddingHorizontal="20dp">
 
-                    <Button
-                        android:id="@+id/btn_instrumental_play"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:background="@drawable/ic_baseline_play_circle_filled_24" />
-
-                    <SeekBar
-                        android:id="@+id/instrumental_seekbar"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical" />
+                        android:orientation="horizontal">
 
-                </LinearLayout>
-                <Button
-                    android:id="@+id/btn_instrumental_download"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_extract"
-                    android:layout_marginTop="20dp"
-                    android:text="Download"/>
+                        <Button
+                            android:id="@+id/btn_instrumental_play"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/ic_baseline_play_circle_filled_24" />
+
+                        <SeekBar
+                            android:id="@+id/instrumental_seekbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btn_instrumental_download"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:background="@drawable/btn_extract"
+                        android:text="Download" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -95,9 +99,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="20dp"
-                android:paddingBottom="20dp"
                 android:orientation="vertical"
-                >
+                android:paddingBottom="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -116,14 +119,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="20dp"
                     android:layout_marginTop="20dp"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingHorizontal="20dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        >
+                        android:orientation="horizontal">
 
                         <Button
                             android:id="@+id/btn_vocal_play"
@@ -135,27 +138,22 @@
                             android:id="@+id/vocal_seekbar"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical" />
+                            android:layout_gravity="center_vertical"
+                            android:visibility="gone"/>
 
                     </LinearLayout>
+
                     <Button
                         android:id="@+id/btn_vocal_download"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/btn_extract"
                         android:layout_marginTop="20dp"
-                        android:text="Download"/>
+                        android:background="@drawable/btn_extract"
+                        android:text="Download" />
                 </LinearLayout>
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_buffering"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAlignment="center"
-                android:text="Buffering"
-                android:textSize="20sp"
-                android:layout_marginBottom="30dp"/>
+
 
         </LinearLayout>
 
@@ -222,14 +220,25 @@
 
     </LinearLayout>
 
-    <com.google.android.gms.ads.AdView
-        xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/adView"
-        android:layout_width="wrap_content"
+    </ScrollView>
+    <RelativeLayout
+        android:id="@+id/adViewContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-9562015878942760/9162138254">
-    </com.google.android.gms.ads.AdView>
+        android:background="@drawable/adview_bg"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginBottom="10dp"
+        android:paddingVertical="20dp">
+
+        <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            ads:adSize="LARGE_BANNER"
+            ads:adUnitId="ca-app-pub-9562015878942760/9162138254"></com.google.android.gms.ads.AdView>
+
+
+    </RelativeLayout>
 </RelativeLayout>
