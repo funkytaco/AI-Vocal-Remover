@@ -60,7 +60,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         val view: View = binding.root
         navController = activity?.findNavController(R.id.nav_host_fragment)!!
 
-   //     initAds()
+        initAds()
 
         binding.btnSelectMp3.setOnClickListener { selectMp3File() }
         binding.btnExtractMp3.setOnClickListener { uploadMp3() }
