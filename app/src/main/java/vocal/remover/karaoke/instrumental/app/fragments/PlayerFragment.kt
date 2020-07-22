@@ -52,7 +52,7 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
-        initAds()
+        //   initAds()
 
         val vocalLink: String? = arguments?.getString("vocal")
         val instrumentalLink: String? = arguments?.getString("instrumental")
@@ -65,26 +65,22 @@ class PlayerFragment : Fragment() {
         binding.btnVocalPlay.setOnClickListener { playVocal() }
 
 
-//        binding.btnPlayInstrumental.setOnClickListener { playMedialink(instrumentalLink) }
-//        binding.btnPlayVocal.setOnClickListener { playMedialink(vocalLink) }
-
-        // (String url, String dirPath, String fileName)
 
         binding.btnInstrumentalDownload.setOnClickListener {
             if (instrumentalLink != null) {
 
                 when {
                     activity?.let {
-                        ContextCompat.checkSelfPermission(
-                                it,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE
-                        )
+                        ContextCompat.checkSelfPermission(it, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     } == PackageManager.PERMISSION_GRANTED -> {
                         startDownloading(instrumentalLink, "INSTRUMENTAL")
-                    } else -> {
-                    // You can directly ask for the permission.
-                   requestStoragePermission()
-                }
+
+                    }
+                    else -> {
+                        // You can directly ask for the permission.
+                        requestStoragePermission()
+
+                    }
                 }
             }
         }
@@ -100,10 +96,11 @@ class PlayerFragment : Fragment() {
                         )
                     } == PackageManager.PERMISSION_GRANTED -> {
                         startDownloading(vocalLink, "VOCAL")
-                    } else -> {
-                    // You can directly ask for the permission.
-                    requestStoragePermission()
-                }
+                    }
+                    else -> {
+                        // You can directly ask for the permission.
+                        requestStoragePermission()
+                    }
                 }
 
             }
@@ -236,15 +233,12 @@ class PlayerFragment : Fragment() {
 
             }
             shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) -> {
-                // In an educational UI, explain to the user why your app requires this
-                // permission for a specific feature to behave as expected. In this UI,
-                // include a "cancel" or "no thanks" button that allows the user to
-                // continue using your app without granting the permission.
-//            showInContextUI(...)
                 val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
                 alertBuilder.setCancelable(true)
                 alertBuilder.setMessage("Record permission is necessary to display music visualizer!!!")
-                alertBuilder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST_CODE) })
+                alertBuilder.setPositiveButton("Allow Permission", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.RECORD_AUDIO), PERMISSION_REQUEST_CODE) })
+                val dialog: AlertDialog = alertBuilder.create()
+                dialog.show()
             }
             else -> {
                 // You can directly ask for the permission.
@@ -262,19 +256,24 @@ class PlayerFragment : Fragment() {
                         it,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
-            } == PackageManager.PERMISSION_GRANTED -> {
 
+            } == PackageManager.PERMISSION_GRANTED -> {
+                Log.e("TAG", "requestPermission: Permission is Granted")
             }
             shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) -> {
 
                 val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
                 alertBuilder.setCancelable(true)
-                alertBuilder.setMessage("Storage permission is necessary to save downloads!!!")
-                alertBuilder.setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE) })
+                alertBuilder.setMessage("Storage permission is to download this file!")
+                alertBuilder.setPositiveButton("Allow Permission", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE) })
+                val dialog: AlertDialog = alertBuilder.create()
+                dialog.show()
+
             }
             else -> {
                 // You can directly ask for the permission.
                 requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE);
+
             }
         }
 
@@ -298,33 +297,7 @@ class PlayerFragment : Fragment() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
     }
 
-    private fun playMedialink(mediaLink: String?) {
 
-        try {
-//            if (player.isPlaying) {
-//                player.stop()
-//                player = null
-//            }
-            //change with setDataSource(Context,Uri);
-//            context?.let { player.setDataSource(it, Uri.parse(mediaLink)) }
-//            player.prepareAsync()
-//            player.setOnPreparedListener(MediaPlayer.OnPreparedListener { //mp.start();
-//                player.start()
-//                Log.e("TAG", "playMedialink: start playing" )
-//                Log.e("TAG", "playMedialink: size is " +player.duration  )
-//            })
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            Log.e("TAG", "onResponse: Error1" + e.message)
-        } catch (e: IllegalStateException) {
-            e.printStackTrace()
-            Log.e("TAG", "onResponse: Error2" + e.message)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Log.e("TAG", "onResponse: Error3" + e.message)
-        }
-
-    }
 
 
     private fun startDownloading(link: String, type: String) {
@@ -433,9 +406,7 @@ class PlayerFragment : Fragment() {
             if (instrumentalPlayer!!.isPlaying) {
                 instrumentalPlayer?.pause()
                 binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
-//                instrumentalPlayer?.release()
             }
-            // instrumentalPlayer = null
         }
     }
 
@@ -444,10 +415,8 @@ class PlayerFragment : Fragment() {
             if (vocalPlayer.isPlaying) {
                 vocalPlayer?.pause()
                 binding.btnVocalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
-//                vocalPlayer?.release()
             }
 
-            // instrumentalPlayer = null
         }
     }
 }
