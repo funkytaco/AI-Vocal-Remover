@@ -44,7 +44,8 @@ class PlayerFragment : Fragment() {
     var instrumentalPlayer: MediaPlayer? = MediaPlayer()
     val vocalPlayer = MediaPlayer()
     lateinit var instrumentalRunnable: Runnable
-
+    lateinit var vocalRunnable: Runnable
+    lateinit var lineBarVisualizer: LineBarVisualizer
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -106,18 +107,6 @@ class PlayerFragment : Fragment() {
             }
         }
 
-//        binding.btnDownloadInstrumental.setOnClickListener {
-//            if (instrumentalLink != null) {
-//                startDownloading(instrumentalLink)
-//            }
-//        }
-//        binding.btnDownloadVocal.setOnClickListener {
-//            if (vocalLink != null) {
-//                startDownloading(vocalLink)
-//            }
-//        }
-
-
         requestPermission()
 
 
@@ -136,10 +125,49 @@ class PlayerFragment : Fragment() {
         try {
             context?.let { vocalPlayer.setDataSource(it, Uri.parse(vocalLink)) }
             vocalPlayer.prepareAsync()
-            vocalPlayer.setOnPreparedListener(MediaPlayer.OnPreparedListener { //mp.start();
-                // vocalPlayer.start()
-                Log.e("TAG", "playMedialink: Vocal Player is Ready")
-                Log.e("TAG", "playMedialink: size is " + vocalPlayer.duration)
+            vocalPlayer.setOnPreparedListener(MediaPlayer.OnPreparedListener {
+                Log.e("TAG", "playMedialink: Vocal Player is Ready with Size " + vocalPlayer.duration)
+
+                val totalTime = vocalPlayer?.duration!!
+                binding.vocalSeekbar.max = totalTime
+                binding.vocalSeekbar.setOnSeekBarChangeListener(
+                        object : SeekBar.OnSeekBarChangeListener {
+                            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                                if (fromUser) {
+                                    vocalPlayer?.seekTo(progress)
+                                }
+                            }
+
+                            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+
+                            }
+
+                            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
+                            }
+
+                        }
+                )
+
+                vocalRunnable = Runnable {
+                    while (vocalPlayer != null) {
+                        try {
+                            var msg = Message()
+                            msg.what = vocalPlayer?.currentPosition!!
+                            handlerForVocal.sendMessage(msg)
+                            Thread.sleep(1000)
+                        } catch (e: java.lang.IllegalStateException) {
+
+                        }
+                    }
+
+                }
+
+                Thread(vocalRunnable).start()
+                vocalPlayer?.setOnBufferingUpdateListener(OnBufferingUpdateListener { mp, percent ->
+
+                })
+
             })
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
@@ -280,10 +308,10 @@ class PlayerFragment : Fragment() {
     }
 
     private fun initVisualizer(player: MediaPlayer) {
-        val lineBarVisualizer: LineBarVisualizer = binding.visualizer
-        context?.let { ContextCompat.getColor(it, R.color.colorPrimary) }?.let { lineBarVisualizer.setColor(it) };
-        lineBarVisualizer.setDensity(70f);
         try {
+            lineBarVisualizer = binding.visualizer
+            context?.let { ContextCompat.getColor(it, R.color.colorPrimary) }?.let { lineBarVisualizer.setColor(it) };
+            lineBarVisualizer.setDensity(70f);
             lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
         } catch (e: Exception) {
             Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: " + e.message)
@@ -296,8 +324,6 @@ class PlayerFragment : Fragment() {
         Log.e("TAG", "getMusicDirectoryPath: Path is " + path)
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
     }
-
-
 
 
     private fun startDownloading(link: String, type: String) {
@@ -313,7 +339,6 @@ class PlayerFragment : Fragment() {
                 DownloadManager.Request.NETWORK_MOBILE)
         request.setTitle("AI Vocal Remover Download")
         request.setDescription("Downloading " + type + " of " + mp3Name)
-        request.allowScanningByMediaScanner()
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "/aivocalremover/" + type + "_" + mp3Name + ".mp3")
 
@@ -391,6 +416,15 @@ class PlayerFragment : Fragment() {
 
             //update the seekbar
             binding.instrumentalSeekbar.progress = currentPosition
+        }
+    }
+
+    var handlerForVocal = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            var currentPosition = msg.what
+
+            //update the seekbar
+            binding.vocalSeekbar.progress = currentPosition
         }
     }
 
