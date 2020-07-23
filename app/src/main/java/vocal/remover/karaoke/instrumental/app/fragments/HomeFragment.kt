@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnPreparedListener
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -23,7 +22,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.InterstitialAd
 import com.google.android.gms.ads.MobileAds
 import okhttp3.MediaType
 import okhttp3.MultipartBody
@@ -32,6 +33,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import vocal.remover.karaoke.instrumental.app.*
+import vocal.remover.karaoke.instrumental.app.activities.DownloadListActivity
 import vocal.remover.karaoke.instrumental.app.databinding.FragmentHomeBinding
 import vocal.remover.karaoke.instrumental.app.models.AudioResultResponse
 import vocal.remover.karaoke.instrumental.app.models.UploadResponse
@@ -39,8 +41,6 @@ import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils.showCustomDial
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
-import java.lang.Exception
 
 public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     lateinit var binding: FragmentHomeBinding
@@ -52,6 +52,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     var mp: MediaPlayer? = null
     var totalTime: Int = 0
     lateinit var r: Runnable
+    private lateinit var mInterstitialAd: InterstitialAd
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -60,17 +61,64 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         val view: View = binding.root
         navController = activity?.findNavController(R.id.nav_host_fragment)!!
 
-        initAds()
+     //   initAds()
 
         binding.btnSelectMp3.setOnClickListener { selectMp3File() }
         binding.btnExtractMp3.setOnClickListener { uploadMp3() }
         binding.btnProcessMp3.setOnClickListener { processMp3() }
-        binding.btnViewResults.setOnClickListener { viewResults() }
+        binding.btnViewResults.setOnClickListener {
+            viewResults()
+//            if (mInterstitialAd.isLoaded) {
+//                mInterstitialAd.show()
+//            } else {
+//                viewResults()
+//                Log.d("TAG", "The interstitial wasn't loaded yet.")
+//            }
+        }
         binding.btnPlay.setOnClickListener { playSelectedSong() }
+        binding.btnDownload.setOnClickListener {
+            if (mp != null) {
+                if (mp!!.isPlaying) {
+                    mp?.pause()
+                    binding.btnPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
+                }
+            }
+            startActivity(Intent(activity, DownloadListActivity::class.java))
+
+        }
 
         return view
     }
 
+    private fun initInterStitials() {
+        mInterstitialAd.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+            }
+
+            override fun onAdFailedToLoad(errorCode: Int) {
+                // Code to be executed when an ad request fails.
+                Log.e("TAG", "onAdFailedToLoad: Ad Failed to load")
+            }
+
+            override fun onAdOpened() {
+                // Code to be executed when the ad is displayed.
+            }
+
+            override fun onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
+            }
+
+            override fun onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            override fun onAdClosed() {
+                // Code to be executed when the interstitial ad is closed.
+                viewResults()
+            }
+        }
+    }
 
 
     private fun playSelectedSong() {
@@ -133,24 +181,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
                 binding.btnViewResults.visibility = View.VISIBLE
                 dialog.hideProgress()
 
-//                val player = MediaPlayer()
-//                try {
-//                    //change with setDataSource(Context,Uri);
-//                    context?.let { player.setDataSource(it, Uri.parse(response.body()?.instrumental_path)) }
-//                    player.prepareAsync()
-//                    player.setOnPreparedListener(OnPreparedListener { //mp.start();
-//                        //     player.start()
-//                    })
-//                } catch (e: IllegalArgumentException) {
-//                    e.printStackTrace()
-//                    Log.e("TAG", "onResponse: Error" + e.message)
-//                } catch (e: IllegalStateException) {
-//                    e.printStackTrace()
-//                    Log.e("TAG", "onResponse: Error" + e.message)
-//                } catch (e: IOException) {
-//                    e.printStackTrace()
-//                    Log.e("TAG", "onResponse: Error" + e.message)
-//                }
+
 
             }
         })
@@ -219,7 +250,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
                     handler.sendMessage(msg)
                     Thread.sleep(1000)
                 } catch (e: Exception) {
-                    Log.e("TAG", "initMediaPlayer: "+ e.message )
+                    Log.e("TAG", "initMediaPlayer: " + e.message)
                 }
             }
         }
@@ -268,16 +299,18 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         ).enqueue(object : Callback<UploadResponse> {
             override fun onFailure(call: Call<UploadResponse>, t: Throwable) {
 
-                if (t.message?.contains("Filed To Connect", true)!!) {
+                if (t.message?.contains("Failed To Connect", true)!!) {
                     Toast.makeText(activity, "Upload Error: Internet Connection not Available", Toast.LENGTH_LONG).show();
+                    showTimeOutDialog("Error: Internet Connection not Available")
                 } else {
                     Toast.makeText(activity, "Upload Error: ${t.message}", Toast.LENGTH_LONG).show();
+                    showTimeOutDialog("Error: " + t.message)
                 }
 
                 //  binding?.layoutRoot?.snackbar(t.message!!)
                 binding?.progressBar?.progress = 0
                 dialog.hideProgress()
-                showTimeOutDialog("Error: " + t.message)
+
             }
 
             override fun onResponse(call: Call<UploadResponse>, response: Response<UploadResponse>) {
@@ -336,7 +369,6 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     }
 
 
-
     private fun stopPlaying() {
         if (mp != null) {
             mp?.stop()
@@ -349,6 +381,11 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         MobileAds.initialize(activity) {}
         val adRequest = AdRequest.Builder().build()
         binding.adView.loadAd(adRequest)
+
+        mInterstitialAd = InterstitialAd(activity)
+        mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+        initInterStitials()
     }
 
 }

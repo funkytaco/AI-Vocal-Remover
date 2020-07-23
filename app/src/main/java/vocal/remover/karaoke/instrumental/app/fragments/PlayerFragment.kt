@@ -7,6 +7,7 @@ import android.app.AlertDialog
 import android.app.DownloadManager
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaPlayer.OnBufferingUpdateListener
@@ -28,6 +29,7 @@ import com.chibde.visualizer.LineBarVisualizer
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import vocal.remover.karaoke.instrumental.app.R
+import vocal.remover.karaoke.instrumental.app.activities.DownloadListActivity
 import vocal.remover.karaoke.instrumental.app.databinding.FragmentPlayerBinding
 import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils
 import java.io.IOException
@@ -65,7 +67,12 @@ class PlayerFragment : Fragment() {
         binding.btnInstrumentalPlay.setOnClickListener { playInstrumental() }
         binding.btnVocalPlay.setOnClickListener { playVocal() }
 
+        binding.btnDownload.setOnClickListener{
+            stopPlayingInstrumental()
+            stopPlayingVocal()
+            startActivity(Intent(activity, DownloadListActivity::class.java))
 
+        }
 
         binding.btnInstrumentalDownload.setOnClickListener {
             if (instrumentalLink != null) {

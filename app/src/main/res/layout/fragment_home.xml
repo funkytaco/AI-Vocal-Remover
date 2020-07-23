@@ -79,6 +79,18 @@
             <!--                android:textAlignment="center"-->
             <!--                android:textSize="20sp"-->
             <!--                android:textColor="@color/white" />-->
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnDownload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+               android:layout_marginTop="10dp"
+                android:layout_marginRight="10dp"
+                app:backgroundTint="@color/white"
+                android:src="@drawable/ic_baseline_cloud_download_24"
+                android:background="@color/colorPrimary"
+                android:tint="@color/colorPrimary"/>
         </RelativeLayout>
 
         <ScrollView
