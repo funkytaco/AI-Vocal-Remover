@@ -52,7 +52,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     var mp: MediaPlayer? = null
     var totalTime: Int = 0
     lateinit var r: Runnable
-    private lateinit var mInterstitialAd: InterstitialAd
+
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -61,19 +61,28 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         val view: View = binding.root
         navController = activity?.findNavController(R.id.nav_host_fragment)!!
 
-     //   initAds()
+        initAds()
+        val mInterstitialAd = InterstitialAd(activity)
+        mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
+     //   mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+        initInterStitials(mInterstitialAd)
 
         binding.btnSelectMp3.setOnClickListener { selectMp3File() }
         binding.btnExtractMp3.setOnClickListener { uploadMp3() }
         binding.btnProcessMp3.setOnClickListener { processMp3() }
         binding.btnViewResults.setOnClickListener {
-            viewResults()
-//            if (mInterstitialAd.isLoaded) {
-//                mInterstitialAd.show()
-//            } else {
-//                viewResults()
-//                Log.d("TAG", "The interstitial wasn't loaded yet.")
-//            }
+
+            if (mInterstitialAd == null) {
+                viewResults()
+            } else {
+                if (mInterstitialAd.isLoaded) {
+                    mInterstitialAd.show()
+                } else {
+                    viewResults()
+                    Log.d("TAG", "The interstitial wasn't loaded yet.")
+                }
+            }
         }
         binding.btnPlay.setOnClickListener { playSelectedSong() }
         binding.btnDownload.setOnClickListener {
@@ -90,7 +99,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         return view
     }
 
-    private fun initInterStitials() {
+    private fun initInterStitials(mInterstitialAd: InterstitialAd) {
         mInterstitialAd.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 // Code to be executed when an ad finishes loading.
@@ -140,7 +149,8 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         stopAndReleaseMediaPlayer()
 
         val bundle = Bundle()
-        Log.e("TAG", "i am putting " + instrumentalLink + vocalLink)
+        Log.e("TAG", "i am putting " + instrumentalLink)
+        Log.e("TAG", "i am putting " + vocalLink)
         bundle.putString("instrumental", instrumentalLink)
         bundle.putString("vocal", vocalLink)
         bundle.putString("mp3_name", getMp3FileName(selectedMp3Uri))
@@ -180,7 +190,6 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
                 vocalLink = response.body()?.vocal_path.toString()
                 binding.btnViewResults.visibility = View.VISIBLE
                 dialog.hideProgress()
-
 
 
             }
@@ -382,10 +391,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         val adRequest = AdRequest.Builder().build()
         binding.adView.loadAd(adRequest)
 
-        mInterstitialAd = InterstitialAd(activity)
-        mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
-        mInterstitialAd.loadAd(AdRequest.Builder().build())
-        initInterStitials()
+
     }
 
 }

@@ -55,7 +55,7 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
-           initAds()
+        initAds()
 
         val vocalLink: String? = arguments?.getString("vocal")
         val instrumentalLink: String? = arguments?.getString("instrumental")
@@ -67,7 +67,7 @@ class PlayerFragment : Fragment() {
         binding.btnInstrumentalPlay.setOnClickListener { playInstrumental() }
         binding.btnVocalPlay.setOnClickListener { playVocal() }
 
-        binding.btnDownload.setOnClickListener{
+        binding.btnDownload.setOnClickListener {
             stopPlayingInstrumental()
             stopPlayingVocal()
             startActivity(Intent(activity, DownloadListActivity::class.java))
@@ -76,7 +76,7 @@ class PlayerFragment : Fragment() {
 
         binding.btnInstrumentalDownload.setOnClickListener {
             if (instrumentalLink != null) {
-
+               // downloadWithBrowser(instrumentalLink)
                 when {
                     activity?.let {
                         ContextCompat.checkSelfPermission(it, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -95,7 +95,7 @@ class PlayerFragment : Fragment() {
 
         binding.btnVocalDownload.setOnClickListener {
             if (vocalLink != null) {
-
+             //   downloadWithBrowser(vocalLink)
                 when {
                     activity?.let {
                         ContextCompat.checkSelfPermission(
@@ -114,11 +114,16 @@ class PlayerFragment : Fragment() {
             }
         }
 
-        requestPermission()
-
+        //requestPermission()
 
 
         return view
+    }
+
+    fun downloadWithBrowser(link: String) {
+        val openURL = Intent(android.content.Intent.ACTION_VIEW)
+        openURL.data = Uri.parse(link)
+        startActivity(openURL)
     }
 
     private fun initAds() {
@@ -197,7 +202,7 @@ class PlayerFragment : Fragment() {
                 instrumentalPlayer?.start()
                 Log.e("TAG", "initInstrumentalPlayer: Playing now")
 
-                initVisualizer(instrumentalPlayer!!)
+                //    initVisualizer(instrumentalPlayer!!)
                 binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_pause_circle_filled_24)
                 val totalTime = instrumentalPlayer?.duration!!
                 binding.instrumentalSeekbar.max = totalTime
@@ -314,17 +319,17 @@ class PlayerFragment : Fragment() {
 
     }
 
-    private fun initVisualizer(player: MediaPlayer) {
-        try {
-            lineBarVisualizer = binding.visualizer
-            context?.let { ContextCompat.getColor(it, R.color.colorPrimary) }?.let { lineBarVisualizer.setColor(it) };
-            lineBarVisualizer.setDensity(70f);
-            lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
-        } catch (e: Exception) {
-            Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: " + e.message)
-        }
-
-    }
+//    private fun initVisualizer(player: MediaPlayer) {
+//        try {
+//            lineBarVisualizer = binding.visualizer
+//            context?.let { ContextCompat.getColor(it, R.color.colorPrimary) }?.let { lineBarVisualizer.setColor(it) };
+//            lineBarVisualizer.setDensity(70f);
+//            lineBarVisualizer.setPlayer(player?.getAudioSessionId()!!);
+//        } catch (e: Exception) {
+//            Log.e("TAG", "initVisualizer: UnsupportedOperationException Error: " + e.message)
+//        }
+//
+//    }
 
     private fun getMusicDirectoryPath(): String? {
         val path: String = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
@@ -395,7 +400,7 @@ class PlayerFragment : Fragment() {
             binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
         } else {
             stopPlayingVocal()
-            initVisualizer(instrumentalPlayer!!)
+            //   initVisualizer(instrumentalPlayer!!)
             //start
             instrumentalPlayer!!.start()
             binding.btnInstrumentalPlay.setBackgroundResource(R.drawable.ic_baseline_pause_circle_filled_24)
@@ -409,7 +414,7 @@ class PlayerFragment : Fragment() {
             binding.btnVocalPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
         } else {
             stopPlayingInstrumental()
-            initVisualizer(vocalPlayer!!)
+            // initVisualizer(vocalPlayer!!)
             //start
             vocalPlayer.start()
             binding.btnVocalPlay.setBackgroundResource(R.drawable.ic_baseline_pause_circle_filled_24)
