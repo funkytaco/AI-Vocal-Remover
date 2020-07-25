@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.os.ParcelFileDescriptor
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -50,6 +51,10 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import com.google.android.gms.ads.reward.RewardedVideoAd
 import com.google.android.gms.ads.reward.RewardedVideoAdListener
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.*
+import com.karumi.dexter.listener.single.PermissionListener
 import vocal.remover.karaoke.instrumental.app.activities.PurchaseActivity
 import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils
 import vocal.remover.karaoke.instrumental.app.utils_java.SessionManager
@@ -81,10 +86,10 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
         initCustomerCoins()
         requestStoragePermission()
 
-        //initAds()
+        initAds()
         val mInterstitialAd = InterstitialAd(activity)
-      //  mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
-           mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
+        mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
+      //     mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
         mInterstitialAd.loadAd(AdRequest.Builder().build())
         initInterStitials(mInterstitialAd)
 
@@ -95,11 +100,22 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
 
         binding.btnSelectMp3.setOnClickListener {
             when {
-                activity?.let { ContextCompat.checkSelfPermission(it, Manifest.permission.WRITE_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED -> {
+                activity?.let { ActivityCompat.checkSelfPermission(it, Manifest.permission.WRITE_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED -> {
                     selectMp3File()
-                }
-                else -> {
+                    Log.e(TAG, "onPermissionDenieda1: Permission denied once" )
+                }shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) -> {
+
+                val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(activity)
+                alertBuilder.setCancelable(true)
+                alertBuilder.setMessage("Storage permission is Needed!")
+                alertBuilder.setPositiveButton("Allow Permission!", DialogInterface.OnClickListener { dialog, which -> requestStoragePermission() })
+                val dialog: AlertDialog = alertBuilder.create()
+                dialog.show()
+
+            } else -> {
                     // You can directly ask for the permission.
+//                    Log.e(TAG, "onPermissionDenieda2: Permission denied once" )
+//                    requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE);
                     requestStoragePermission()
 
                 }
@@ -129,9 +145,9 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
         binding.btnCoins.setOnClickListener {
             pauseMpPlayer()
             if (sessionManager.coins >0) {
-                startActivity(Intent(activity, PurchaseActivity::class.java))
+                showRewardedVideoDialog("TO GET MORE CREDITS, WATCH AN AD FOR 1 CREDIT OR SUBSCRIBE TO PRO VERSION")
             } else {
-                showRewardedVideoDialog()
+                showRewardedVideoDialog("SORRY, YOU NEED MORE CREDITS, WATCH AN AD FOR 1 CREDIT OR SUBSCRIBE TO PRO VERSION")
             }
         }
 
@@ -406,7 +422,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
                 }
             })
         } catch (e: IllegalArgumentException) {
-            AppUtils.showCustomDialog(Activity(), "Invalid characters found in this file Name. Kindly rename the mp3 file before extracting")
+            AppUtils.showCustomDialog(activity, "Invalid characters found in this file Name. Kindly rename the mp3 file before extracting")
         }
 
 
@@ -418,20 +434,20 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
             binding.tvCoins.setText("" + sessionManager.coins)
             return true
         } else {
-            showRewardedVideoDialog()
+            showRewardedVideoDialog("SORRY, YOU NEED MORE CREDITS, WATCH AN AD FOR 1 CREDIT OR SUBSCRIBE TO PRO VERSION")
             return false
         }
     }
 
-    private fun showRewardedVideoDialog() {
-        val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+    private fun showRewardedVideoDialog(text: String) {
+        val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(activity)
         alertBuilder.setCancelable(true)
-        alertBuilder.setMessage("SORRY, YOU NEED MORE CREDITS, WATCH AN AD FOR 1 CREDIT OR SUBSCRIBE TO PRO VERSION")
-        alertBuilder.setNegativeButton("WATCH AD", DialogInterface.OnClickListener { dialog, which -> if (mRewardedVideoAd.isLoaded) {
+        alertBuilder.setMessage(text)
+        alertBuilder.setPositiveButton("WATCH AD", DialogInterface.OnClickListener { dialog, which -> if (mRewardedVideoAd.isLoaded) {
             pauseMpPlayer()
             mRewardedVideoAd.show()
         } })
-        alertBuilder.setPositiveButton("SUBSCRIBE", DialogInterface.OnClickListener { dialog, which ->
+        alertBuilder.setNegativeButton("SUBSCRIBE", DialogInterface.OnClickListener { dialog, which ->
            pauseMpPlayer()
             startActivity(Intent(activity, PurchaseActivity::class.java))
         })
@@ -532,33 +548,48 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
     }
 
     private fun requestStoragePermission() {
-        when {
-            activity?.let {
-                ContextCompat.checkSelfPermission(
-                        it,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
 
-            } == PackageManager.PERMISSION_GRANTED -> {
-                Log.e("TAG", "requestPermission: Permission is Granted")
-            }
-            shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) -> {
+        Dexter.withActivity(activity)
+                .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withListener(object: PermissionListener {
+                    override fun onPermissionGranted(response: PermissionGrantedResponse) {
+                      //  selectMp3File()
+                    }
 
-                val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-                alertBuilder.setCancelable(true)
-                alertBuilder.setMessage("Storage permission is Needed")
-                alertBuilder.setPositiveButton("Allow Permission", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE) })
-                val dialog: AlertDialog = alertBuilder.create()
-                dialog.show()
+                    override fun onPermissionRationaleShouldBeShown(permission: PermissionRequest, token: PermissionToken?) {
+                        token?.continuePermissionRequest()
+                    }
 
-            }
-            else -> {
-                AppUtils.showCustomDialog(activity, "You Need Storage Permission to Use this App, Kindly go to your settings and Enable it")
-                // You can directly ask for the permission.
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE);
+                    override fun onPermissionDenied(response: PermissionDeniedResponse) {
+                        if (response.isPermanentlyDenied()) {
+                            // navigate user to app settings
 
-            }
-        }
+                            val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(activity)
+                            alertBuilder.setCancelable(true)
+                            alertBuilder.setMessage("Storage permission is Needed to use this app")
+                            alertBuilder.setPositiveButton("Go To Settings", DialogInterface.OnClickListener { dialog, which ->
+                                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                        Uri.parse("package:" + activity?.getPackageName()));
+                                intent.addCategory(Intent.CATEGORY_DEFAULT);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                activity?.startActivity(intent);
+                            })
+                            val dialog: AlertDialog = alertBuilder.create()
+                            dialog.show()
 
+
+
+                        }
+                    }
+
+
+                })
+                .withErrorListener(object : PermissionRequestErrorListener {
+                    override fun onError(p0: DexterError?) {
+                        Toast.makeText(activity, "Error occurred! " + p0.toString(), Toast.LENGTH_SHORT).show();
+                    }
+
+                }).check()
+//
     }
 }

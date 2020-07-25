@@ -1,19 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.PurchaseActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Buy 10 Coins to be able to extract 10 songs"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textAlignment="center"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:text=" \n
+-> Extract Songs into 4 Stems (Vocals / drums / bass / other separation)\n\n
+-> Extract Songs into 5 Stems (Vocals / drums / bass / piano / other separation) \n\n
+" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="$4.99"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textAlignment="center"/>
+
     <Button
         android:id="@+id/buttonBuyProduct"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Buy your product"
+        android:text="Buy Coins"
+        android:paddingHorizontal="30dp"
+        android:textSize="25sp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/btn_extract"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="30dp"
+            android:textAlignment="center"
+            android:text="For enquiries, contact us at bajiodunamis@gmail.com"/>
+
+    </LinearLayout>
+
+</ScrollView>

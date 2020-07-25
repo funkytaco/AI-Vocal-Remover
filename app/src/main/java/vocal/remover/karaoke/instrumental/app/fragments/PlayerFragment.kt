@@ -55,7 +55,7 @@ class PlayerFragment : Fragment() {
     val vocalPlayer = MediaPlayer()
     lateinit var instrumentalRunnable: Runnable
     lateinit var vocalRunnable: Runnable
-    val mInterstitialAd = InterstitialAd(activity)
+    lateinit var mInterstitialAd: InterstitialAd
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -63,10 +63,11 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
-     //   initAds()
+        initAds()
+       mInterstitialAd = InterstitialAd(activity)
 
-        //  mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
-        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
+          mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
+//        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
         mInterstitialAd.loadAd(AdRequest.Builder().build())
         initInterStitials(mInterstitialAd)
 
@@ -518,11 +519,13 @@ class PlayerFragment : Fragment() {
         mInterstitialAd.adListener = object : AdListener() {
             override fun onAdLoaded() {
                 // Code to be executed when an ad finishes loading.
+                mInterstitialAd.loadAd(AdRequest.Builder().build())
             }
 
             override fun onAdFailedToLoad(errorCode: Int) {
                 // Code to be executed when an ad request fails.
                 Log.e("TAG", "onAdFailedToLoad: Ad Failed to load")
+                mInterstitialAd.loadAd(AdRequest.Builder().build())
             }
 
             override fun onAdOpened() {

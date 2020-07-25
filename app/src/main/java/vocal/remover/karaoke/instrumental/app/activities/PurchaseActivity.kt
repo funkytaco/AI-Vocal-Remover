@@ -4,9 +4,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import com.android.billingclient.api.*
-import vocal.remover.karaoke.instrumental.app.R
 import vocal.remover.karaoke.instrumental.app.databinding.ActivityPurchaseBinding
+import vocal.remover.karaoke.instrumental.app.utils_java.SessionManager.getSessionManagerInstance
 
 class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
 
@@ -29,7 +30,7 @@ class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
     override fun onPurchasesUpdated(billingResult: BillingResult?, purchases: MutableList<Purchase>?) {
         if (billingResult?.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
             for (purchase in purchases) {
-                acknowledgePurchase(purchase.purchaseToken)
+                acknowledgePurchase(purchase.purchaseToken, purchase)
 
             }
         } else if (billingResult?.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
@@ -106,7 +107,7 @@ class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
         Log.e(Companion.TAG, "onBillingSetupFinished: Billing Client not ready " )
     }
 
-    private fun acknowledgePurchase(purchaseToken: String) {
+    private fun acknowledgePurchase(purchaseToken: String, purchase: Purchase) {
         val params = AcknowledgePurchaseParams.newBuilder()
                 .setPurchaseToken(purchaseToken)
                 .build()
@@ -114,6 +115,10 @@ class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
             val responseCode = billingResult.responseCode
             val debugMessage = billingResult.debugMessage
 
+            if (purchase.sku.equals("50_songs")) {
+                Toast.makeText(this, "Thank you for purchasing!", Toast.LENGTH_SHORT).show();
+                getSessionManagerInstance().coins = 10
+            }
         }
     }
 
