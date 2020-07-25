@@ -59,10 +59,9 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     implementation "com.airbnb.android:lottie:3.0.0-beta1"
-    implementation 'com.mindorks.android:prdownloader:0.6.0'
-    implementation 'com.chibde:audiovisualizer:2.2.0'
-    implementation 'com.gauravk.audiovisualizer:audiovisualizer:0.9.2'
+
     implementation 'com.google.android.gms:play-services-ads:18.3.0'
+    implementation 'com.android.billingclient:billing:2.0.3'
     implementation 'com.android.support:multidex:1.0.3'
 
 }

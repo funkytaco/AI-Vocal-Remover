@@ -1,9 +1,13 @@
 package vocal.remover.karaoke.instrumental.app.fragments
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +23,8 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -26,6 +32,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.InterstitialAd
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.reward.RewardItem
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -41,8 +48,15 @@ import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils.showCustomDial
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import com.google.android.gms.ads.reward.RewardedVideoAd
+import com.google.android.gms.ads.reward.RewardedVideoAdListener
+import vocal.remover.karaoke.instrumental.app.activities.PurchaseActivity
+import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils
+import vocal.remover.karaoke.instrumental.app.utils_java.SessionManager
+import vocal.remover.karaoke.instrumental.app.utils_java.SessionManager.getSessionManagerInstance
+import java.lang.IllegalArgumentException
 
-public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
+public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, RewardedVideoAdListener {
     lateinit var binding: FragmentHomeBinding
     private var selectedMp3Uri: Uri? = null
     val dialog = CustomProgressDialog.getInstance();
@@ -52,6 +66,9 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     var mp: MediaPlayer? = null
     var totalTime: Int = 0
     lateinit var r: Runnable
+    private lateinit var mRewardedVideoAd: RewardedVideoAd
+    val sessionManager: SessionManager = getSessionManagerInstance()
+    val STORAGE_PERMISSION_REQUEST_CODE: Int = 222
 
 
 
@@ -61,43 +78,90 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
         val view: View = binding.root
         navController = activity?.findNavController(R.id.nav_host_fragment)!!
 
-        initAds()
+        initCustomerCoins()
+        requestStoragePermission()
+
+        //initAds()
         val mInterstitialAd = InterstitialAd(activity)
-        mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
-     //   mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
+      //  mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
+           mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
         mInterstitialAd.loadAd(AdRequest.Builder().build())
         initInterStitials(mInterstitialAd)
 
-        binding.btnSelectMp3.setOnClickListener { selectMp3File() }
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(activity)
+        mRewardedVideoAd.rewardedVideoAdListener = this
+        mRewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", AdRequest.Builder().build()) //test ads
+    //    mRewardedVideoAd.loadAd("ca-app-pub-9562015878942760/7452189506", AdRequest.Builder().build())
+
+        binding.btnSelectMp3.setOnClickListener {
+            when {
+                activity?.let { ContextCompat.checkSelfPermission(it, Manifest.permission.WRITE_EXTERNAL_STORAGE) } == PackageManager.PERMISSION_GRANTED -> {
+                    selectMp3File()
+                }
+                else -> {
+                    // You can directly ask for the permission.
+                    requestStoragePermission()
+
+                }
+            }
+           }
         binding.btnExtractMp3.setOnClickListener { uploadMp3() }
         binding.btnProcessMp3.setOnClickListener { processMp3() }
         binding.btnViewResults.setOnClickListener {
-
-            if (mInterstitialAd == null) {
-                viewResults()
-            } else {
-                if (mInterstitialAd.isLoaded) {
-                    mInterstitialAd.show()
-                } else {
-                    viewResults()
-                    Log.d("TAG", "The interstitial wasn't loaded yet.")
-                }
-            }
+            viewResults()
+//            if (mInterstitialAd == null) {
+//                viewResults()
+//            } else {
+//                if (mInterstitialAd.isLoaded) {
+//                    mInterstitialAd.show()
+//                } else {
+//                    viewResults()
+//                    Log.d("TAG", "The interstitial wasn't loaded yet.")
+//                }
+//            }
         }
         binding.btnPlay.setOnClickListener { playSelectedSong() }
-        binding.btnDownload.setOnClickListener {
-            if (mp != null) {
-                if (mp!!.isPlaying) {
-                    mp?.pause()
-                    binding.btnPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
-                }
-            }
+        binding.btnDownloadPage.setOnClickListener {
+           pauseMpPlayer()
             startActivity(Intent(activity, DownloadListActivity::class.java))
-
         }
+
+        binding.btnCoins.setOnClickListener {
+            pauseMpPlayer()
+            if (sessionManager.coins >0) {
+                startActivity(Intent(activity, PurchaseActivity::class.java))
+            } else {
+                showRewardedVideoDialog()
+            }
+        }
+
 
         return view
     }
+
+    private fun pauseMpPlayer() {
+        if (mp != null) {
+            if (mp!!.isPlaying) {
+                mp?.pause()
+                binding.btnPlay.setBackgroundResource(R.drawable.ic_baseline_play_circle_filled_24)
+            }
+        }
+    }
+
+    private fun initCustomerCoins() {
+
+        if (sessionManager.returningStatus == true) {
+        binding.tvCoins.setText(""+sessionManager.coins)
+        } else { //new suser
+            sessionManager.returningStatus = true
+            sessionManager.coins = 5
+            binding.tvCoins.setText(""+sessionManager.coins)
+
+        }
+
+    }
+
+
 
     private fun initInterStitials(mInterstitialAd: InterstitialAd) {
         mInterstitialAd.adListener = object : AdListener() {
@@ -130,6 +194,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     }
 
 
+
     private fun playSelectedSong() {
 
         if (mp!!.isPlaying) {
@@ -145,9 +210,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
     }
 
     private fun viewResults() {
-
         stopAndReleaseMediaPlayer()
-
         val bundle = Bundle()
         Log.e("TAG", "i am putting " + instrumentalLink)
         Log.e("TAG", "i am putting " + vocalLink)
@@ -282,10 +345,16 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
 
 
     private fun uploadMp3() {
+
         if (selectedMp3Uri == null) {
             binding?.layoutRoot?.snackbar("Select an Mp3 File First")
             return
         }
+       if (processCoins() == false) {
+           return
+       }
+
+
         dialog.ShowProgress(activity, "Uploading Mp3..", false);
 
         val parcelFileDescriptor: ParcelFileDescriptor =
@@ -298,44 +367,77 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
 
         binding?.progressBar?.progress = 0
         val body = UploadRequestBody(file, "audio", this)
-        MyAPI().uploadImage(
-                MultipartBody.Part.createFormData(
-                        "fileName",
-                        file.name,
-                        body
-                ),
-                RequestBody.create(MediaType.parse("multipart/form-data"), "json")
-        ).enqueue(object : Callback<UploadResponse> {
-            override fun onFailure(call: Call<UploadResponse>, t: Throwable) {
+        try {
+            MyAPI().uploadImage(
+                    MultipartBody.Part.createFormData(
+                            "fileName",
+                            file.name,
+                            body
+                    ),
+                    RequestBody.create(MediaType.parse("multipart/form-data"), "json")
+            ).enqueue(object : Callback<UploadResponse> {
+                override fun onFailure(call: Call<UploadResponse>, t: Throwable) {
 
-                if (t.message?.contains("Failed To Connect", true)!!) {
-                    Toast.makeText(activity, "Upload Error: Internet Connection not Available", Toast.LENGTH_LONG).show();
-                    showTimeOutDialog("Error: Internet Connection not Available")
-                } else {
-                    Toast.makeText(activity, "Upload Error: ${t.message}", Toast.LENGTH_LONG).show();
-                    showTimeOutDialog("Error: " + t.message)
-                }
+                    if (t.message?.contains("Failed To Connect", true)!!) {
+                        Toast.makeText(activity, "Upload Error: Internet Connection not Available", Toast.LENGTH_LONG).show();
+                        showTimeOutDialog("Error: Internet Connection not Available")
+                    } else {
+                        Toast.makeText(activity, "Upload Error: ${t.message}", Toast.LENGTH_LONG).show();
+                        showTimeOutDialog("Error: " + t.message)
+                    }
 
-                //  binding?.layoutRoot?.snackbar(t.message!!)
-                binding?.progressBar?.progress = 0
-                dialog.hideProgress()
-
-            }
-
-            override fun onResponse(call: Call<UploadResponse>, response: Response<UploadResponse>) {
-                //  Toast.makeText(this@MainActivity, "Hello ${response.body()?.message}", Toast.LENGTH_LONG).show();
-                binding?.tvmessage?.setText(response.body()?.file_path)
-                response.body()?.let {
-                    //    binding?.layoutRoot?.snackbar(it.file_path)
-                    binding?.layoutRoot?.snackbar("Upload Complete!!")
-                    binding?.progressBar?.progress = 100
+                    //  binding?.layoutRoot?.snackbar(t.message!!)
+                    binding?.progressBar?.progress = 0
                     dialog.hideProgress()
-                    dialog.ShowProgress(activity, "Processing Mp3..  ", false);
-                    processMp3()
+
                 }
-            }
+
+                override fun onResponse(call: Call<UploadResponse>, response: Response<UploadResponse>) {
+                    //  Toast.makeText(this@MainActivity, "Hello ${response.body()?.message}", Toast.LENGTH_LONG).show();
+                    binding?.tvmessage?.setText(response.body()?.file_path)
+                    response.body()?.let {
+                        //    binding?.layoutRoot?.snackbar(it.file_path)
+                        binding?.layoutRoot?.snackbar("Upload Complete!!")
+                        binding?.progressBar?.progress = 100
+                        dialog.hideProgress()
+                        dialog.ShowProgress(activity, "Processing Mp3..  ", false);
+                        processMp3()
+                    }
+                }
+            })
+        } catch (e: IllegalArgumentException) {
+            AppUtils.showCustomDialog(Activity(), "Invalid characters found in this file Name. Kindly rename the mp3 file before extracting")
+        }
+
+
+    }
+
+    private fun processCoins(): Boolean {
+        if (sessionManager.coins >0) {
+            sessionManager.coins--
+            binding.tvCoins.setText("" + sessionManager.coins)
+            return true
+        } else {
+            showRewardedVideoDialog()
+            return false
+        }
+    }
+
+    private fun showRewardedVideoDialog() {
+        val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+        alertBuilder.setCancelable(true)
+        alertBuilder.setMessage("SORRY, YOU NEED MORE CREDITS, WATCH AN AD FOR 1 CREDIT OR SUBSCRIBE TO PRO VERSION")
+        alertBuilder.setNegativeButton("WATCH AD", DialogInterface.OnClickListener { dialog, which -> if (mRewardedVideoAd.isLoaded) {
+            pauseMpPlayer()
+            mRewardedVideoAd.show()
+        } })
+        alertBuilder.setPositiveButton("SUBSCRIBE", DialogInterface.OnClickListener { dialog, which ->
+           pauseMpPlayer()
+            startActivity(Intent(activity, PurchaseActivity::class.java))
         })
 
+        val dialog: AlertDialog = alertBuilder.create()
+        dialog.show()
     }
 
     private fun getMp3FileName(selectedMp3Uri: Uri?): String? {
@@ -353,6 +455,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
 
     companion object {
         const val REQUEST_CODE_PICK_IMAGE = 101
+        private const val TAG = "HomeFragment"
     }
 
     override fun onProgressUpdate(percentage: Int) {
@@ -394,4 +497,68 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback {
 
     }
 
+    override fun onRewardedVideoAdClosed() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onRewardedVideoAdLeftApplication() {
+        Log.e(TAG, "onRewardedVideoAdLeftApplication: " )
+    }
+
+    override fun onRewardedVideoAdLoaded() {
+        Log.e(TAG, "onRewardedVideoAdLoaded: " )
+    }
+
+    override fun onRewardedVideoAdOpened() {
+        Log.e(TAG, "onRewardedVideoAdOpened: " )
+    }
+
+    override fun onRewardedVideoCompleted() {
+        Log.e(TAG, "onRewardedVideoCompleted: " )
+    }
+
+    override fun onRewarded(p0: RewardItem?) {
+        sessionManager.coins++
+        binding.tvCoins.setText(""+sessionManager.coins)
+        Log.e(TAG, "onRewarded: " )
+    }
+
+    override fun onRewardedVideoStarted() {
+        Log.e("TAG", "onRewardedVideoStarted: " )
+    }
+
+    override fun onRewardedVideoAdFailedToLoad(p0: Int) {
+        Log.e(TAG, "onRewardedVideoAdFailedToLoad: " )
+    }
+
+    private fun requestStoragePermission() {
+        when {
+            activity?.let {
+                ContextCompat.checkSelfPermission(
+                        it,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+
+            } == PackageManager.PERMISSION_GRANTED -> {
+                Log.e("TAG", "requestPermission: Permission is Granted")
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE) -> {
+
+                val alertBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+                alertBuilder.setCancelable(true)
+                alertBuilder.setMessage("Storage permission is Needed")
+                alertBuilder.setPositiveButton("Allow Permission", DialogInterface.OnClickListener { dialog, which -> ActivityCompat.requestPermissions((context as Activity?)!!, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE) })
+                val dialog: AlertDialog = alertBuilder.create()
+                dialog.show()
+
+            }
+            else -> {
+                AppUtils.showCustomDialog(activity, "You Need Storage Permission to Use this App, Kindly go to your settings and Enable it")
+                // You can directly ask for the permission.
+                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE);
+
+            }
+        }
+
+    }
 }

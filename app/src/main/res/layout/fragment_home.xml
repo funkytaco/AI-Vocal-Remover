@@ -72,25 +72,81 @@
                 app:lottie_fileName="music.json"
                 app:lottie_loop="true" />
 
-            <!--            <TextView-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:text="EXTRACT VOCALS AND\n INSTUMENTALS"-->
-            <!--                android:textAlignment="center"-->
-            <!--                android:textSize="20sp"-->
-            <!--                android:textColor="@color/white" />-->
+<!--            <RelativeLayout android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--                xmlns:android="http://schemas.android.com/apk/res/android">-->
+
+<!--                <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--                    android:id="@+id/add_to_cart_floating_action_button"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_margin="16dp"-->
+<!--                    android:elevation="5dp"-->
+<!--                    android:src="@drawable/btn_extract"-->
+<!--                    app:backgroundTint="#800"-->
+<!--                    app:borderWidth="0dp"-->
+<!--                    app:fabSize="normal" />-->
+
+<!--                <TextView-->
+<!--                    android:layout_width="35dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginStart="-45dp"-->
+<!--                    android:layout_marginTop="10dp"-->
+<!--                    android:layout_toEndOf="@id/add_to_cart_floating_action_button"-->
+<!--                    android:background="@color/colorPrimaryDark"-->
+<!--                    android:paddingBottom="2dp"-->
+<!--                    android:paddingEnd="6dp"-->
+<!--                    android:paddingStart="12dp"-->
+<!--                    android:paddingTop="2dp"-->
+<!--                    android:elevation="7dp"-->
+<!--                    android:text="1"-->
+<!--                    android:textColor="#800"-->
+<!--                    android:textStyle="bold" />-->
+
+<!--            </RelativeLayout>-->
+
+            <RelativeLayout
+                android:id="@+id/btnCoins"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/colorPrimary">
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/faboins"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tint="@color/colorPrimary"
+                    app:backgroundTint="@color/white" />
+
+                <TextView
+                    android:id="@+id/tvCoins"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:elevation="6dp"
+                    android:text="00"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="18dp" />
+            </RelativeLayout>
+
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/btnDownload"
+                android:id="@+id/btnDownloadPage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
-               android:layout_marginTop="10dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginRight="10dp"
-                app:backgroundTint="@color/white"
-                android:src="@drawable/ic_baseline_cloud_download_24"
                 android:background="@color/colorPrimary"
-                android:tint="@color/colorPrimary"/>
+                android:src="@drawable/ic_baseline_cloud_download_24"
+                android:tint="@color/colorPrimary"
+                app:backgroundTint="@color/white" />
         </RelativeLayout>
 
         <ScrollView
@@ -215,7 +271,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Process mp3"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
 
                 <ProgressBar
                     android:id="@+id/progress_bar"
@@ -223,8 +279,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:max="100"
-                    tools:progress="40"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
+                    tools:progress="40" />
 
 
             </LinearLayout>

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.app.DownloadManager
 import android.content.Context
 import android.content.DialogInterface
@@ -20,16 +21,21 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.Button
 import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.chibde.visualizer.LineBarVisualizer
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.InterstitialAd
 import com.google.android.gms.ads.MobileAds
 import vocal.remover.karaoke.instrumental.app.R
 import vocal.remover.karaoke.instrumental.app.activities.DownloadListActivity
+import vocal.remover.karaoke.instrumental.app.activities.PurchaseActivity
 import vocal.remover.karaoke.instrumental.app.databinding.FragmentPlayerBinding
 import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils
 import java.io.IOException
@@ -38,7 +44,9 @@ import java.io.IOException
 class PlayerFragment : Fragment() {
 
     lateinit var binding: FragmentPlayerBinding
-    lateinit var mp3Name: String
+    var mp3Name: String? = ""
+    var vocalLink: String? = ""
+    var instrumentalLink: String? = ""
     val PERMISSION_REQUEST_CODE: Int = 111
     val STORAGE_PERMISSION_REQUEST_CODE: Int = 111
 
@@ -47,7 +55,7 @@ class PlayerFragment : Fragment() {
     val vocalPlayer = MediaPlayer()
     lateinit var instrumentalRunnable: Runnable
     lateinit var vocalRunnable: Runnable
-    lateinit var lineBarVisualizer: LineBarVisualizer
+    val mInterstitialAd = InterstitialAd(activity)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -55,15 +63,22 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
-        initAds()
+     //   initAds()
 
-        val vocalLink: String? = arguments?.getString("vocal")
-        val instrumentalLink: String? = arguments?.getString("instrumental")
-        mp3Name = arguments?.getString("mp3_name").toString()
+        //  mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
+        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
+        initInterStitials(mInterstitialAd)
 
-        initInstrumentalPlayer(instrumentalLink)
-        initVocalPlayer(vocalLink)
+        getExtrasFromBundle()
+       initListeners()
 
+        //requestPermission()
+
+        return view
+    }
+
+    private fun initListeners() {
         binding.btnInstrumentalPlay.setOnClickListener { playInstrumental() }
         binding.btnVocalPlay.setOnClickListener { playVocal() }
 
@@ -76,7 +91,7 @@ class PlayerFragment : Fragment() {
 
         binding.btnInstrumentalDownload.setOnClickListener {
             if (instrumentalLink != null) {
-               // downloadWithBrowser(instrumentalLink)
+                // downloadWithBrowser(instrumentalLink)
                 when {
                     activity?.let {
                         ContextCompat.checkSelfPermission(it, Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -95,7 +110,7 @@ class PlayerFragment : Fragment() {
 
         binding.btnVocalDownload.setOnClickListener {
             if (vocalLink != null) {
-             //   downloadWithBrowser(vocalLink)
+                //   downloadWithBrowser(vocalLink)
                 when {
                     activity?.let {
                         ContextCompat.checkSelfPermission(
@@ -103,7 +118,7 @@ class PlayerFragment : Fragment() {
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE
                         )
                     } == PackageManager.PERMISSION_GRANTED -> {
-                        startDownloading(vocalLink, "VOCAL")
+                        startDownloading(vocalLink!!, "VOCAL")
                     }
                     else -> {
                         // You can directly ask for the permission.
@@ -114,10 +129,19 @@ class PlayerFragment : Fragment() {
             }
         }
 
-        //requestPermission()
+        binding.btnPremium.setOnClickListener{
+            startActivity(Intent(activity, PurchaseActivity::class.java))
+        }
 
+    }
 
-        return view
+    private fun getExtrasFromBundle() {
+        vocalLink = arguments?.getString("vocal")
+        instrumentalLink = arguments?.getString("instrumental")
+        mp3Name = arguments?.getString("mp3_name").toString()
+
+        initInstrumentalPlayer(instrumentalLink)
+        initVocalPlayer(vocalLink)
     }
 
     fun downloadWithBrowser(link: String) {
@@ -338,7 +362,7 @@ class PlayerFragment : Fragment() {
     }
 
 
-    private fun startDownloading(link: String, type: String) {
+    private fun startDownloading(link: String?, type: String) {
         if (link.toString().equals("")) {
             Toast.makeText(activity, "Link Not Found", Toast.LENGTH_LONG).show()
             return
@@ -360,7 +384,7 @@ class PlayerFragment : Fragment() {
 
         //  showCustomDialog()
         Log.e("TAG", "startDownloading: Finished  downloading")
-        AppUtils.showDownloadingDialog(activity, "File Downloading \n  ")
+        showDownloadingDialog(activity, "File Downloading \n  ")
     }
 
 
@@ -465,4 +489,59 @@ class PlayerFragment : Fragment() {
 
         }
     }
+
+    fun showDownloadingDialog(activity: Activity?, msg: String?) {
+        val dialog = activity?.let { Dialog(it) }
+        dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog?.setCancelable(false)
+        dialog?.setContentView(R.layout.download_dialog)
+        val text = dialog?.findViewById<View>(R.id.text_dialog) as TextView
+        // text.setText(msg);
+        val dialogButton = dialog.findViewById<View>(R.id.btn_dialog) as Button
+        dialogButton.setOnClickListener {
+            dialog.dismiss()
+
+            if (mInterstitialAd != null) {
+                if (mInterstitialAd.isLoaded) {
+                    mInterstitialAd.show()
+                } else {
+                    Log.d("TAG", "The interstitial wasn't loaded yet.")
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+
+    private fun initInterStitials(mInterstitialAd: InterstitialAd) {
+        mInterstitialAd.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+            }
+
+            override fun onAdFailedToLoad(errorCode: Int) {
+                // Code to be executed when an ad request fails.
+                Log.e("TAG", "onAdFailedToLoad: Ad Failed to load")
+            }
+
+            override fun onAdOpened() {
+                // Code to be executed when the ad is displayed.
+            }
+
+            override fun onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
+            }
+
+            override fun onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            override fun onAdClosed() {
+                // Code to be executed when the interstitial ad is closed.
+
+            }
+        }
+    }
+
 }
