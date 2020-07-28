@@ -95,8 +95,8 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
 
         mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(activity)
         mRewardedVideoAd.rewardedVideoAdListener = this
-        mRewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", AdRequest.Builder().build()) //test ads
-    //    mRewardedVideoAd.loadAd("ca-app-pub-9562015878942760/7452189506", AdRequest.Builder().build())
+       // mRewardedVideoAd.loadAd("ca-app-pub-3940256099942544/5224354917", AdRequest.Builder().build()) //test ads
+        mRewardedVideoAd.loadAd("ca-app-pub-9562015878942760/7452189506", AdRequest.Builder().build())
 
         binding.btnSelectMp3.setOnClickListener {
             when {
