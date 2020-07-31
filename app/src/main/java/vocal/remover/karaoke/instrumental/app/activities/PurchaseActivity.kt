@@ -117,7 +117,7 @@ class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
 
             if (purchase.sku.equals("50_songs")) {
                 Toast.makeText(this, "Thank you for purchasing!", Toast.LENGTH_SHORT).show();
-                getSessionManagerInstance().coins = 10
+                getSessionManagerInstance().coins = getSessionManagerInstance().coins + 10
             }
         }
     }
