@@ -423,6 +423,11 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
             })
         } catch (e: IllegalArgumentException) {
             AppUtils.showCustomDialog(activity, "Invalid characters found in this file Name. Kindly rename the mp3 file before extracting")
+            dialog.hideProgress()
+
+            //return coins
+            sessionManager.coins++
+            binding.tvCoins.setText("" + sessionManager.coins)
         }
 
 
