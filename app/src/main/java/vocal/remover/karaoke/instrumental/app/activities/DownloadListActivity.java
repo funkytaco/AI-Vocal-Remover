@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -58,6 +59,11 @@ public class DownloadListActivity extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
         getSupportActionBar().setTitle("Downloads");
+        if (getSupportActionBar() != null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
 
         initViews();
         initListeners();
@@ -208,6 +214,16 @@ public class DownloadListActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // handle arrow click here
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // close this activity and return to preview activity (if there is any)
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 }

@@ -37,7 +37,6 @@ import vocal.remover.karaoke.instrumental.app.R
 import vocal.remover.karaoke.instrumental.app.activities.DownloadListActivity
 import vocal.remover.karaoke.instrumental.app.activities.PurchaseActivity
 import vocal.remover.karaoke.instrumental.app.databinding.FragmentPlayerBinding
-import vocal.remover.karaoke.instrumental.app.utils_java.AppUtils
 import java.io.IOException
 
 
@@ -63,9 +62,12 @@ class PlayerFragment : Fragment() {
         binding = FragmentPlayerBinding.inflate(inflater, container, false)
         val view: View = binding.root
 
+//        Appodeal.setBannerViewId(R.id.appodealBannerView);
+//        Appodeal.initialize(activity as Activity, "58ad50c7bdfa108e6bd1f093a1770257d7494322ebcf845a", Appodeal.BANNER)
+//        Appodeal.show(activity as Activity, Appodeal.BANNER_VIEW);
+
         initAds()
        mInterstitialAd = InterstitialAd(activity)
-
           mInterstitialAd.adUnitId = "ca-app-pub-9562015878942760/1838746657"
 //        mInterstitialAd.adUnitId = "ca-app-pub-3940256099942544/1033173712" //test ads
         mInterstitialAd.loadAd(AdRequest.Builder().build())
@@ -131,6 +133,7 @@ class PlayerFragment : Fragment() {
         }
 
         binding.btnPremium.setOnClickListener{
+//            Log.e("TAG", "initListeners: "+Appodeal.isLoaded(Appodeal.BANNER) )
             startActivity(Intent(activity, PurchaseActivity::class.java))
         }
 

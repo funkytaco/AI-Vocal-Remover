@@ -1,10 +1,12 @@
 package vocal.remover.karaoke.instrumental.app.activities
 
-import androidx.appcompat.app.AppCompatActivity
+import android.R
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.android.billingclient.api.*
 import vocal.remover.karaoke.instrumental.app.databinding.ActivityPurchaseBinding
 import vocal.remover.karaoke.instrumental.app.utils_java.SessionManager.getSessionManagerInstance
@@ -20,6 +22,13 @@ class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
         binding = ActivityPurchaseBinding.inflate(layoutInflater)
         val view: View = binding.root
         setContentView(view)
+
+        if (getSupportActionBar() != null){
+            getSupportActionBar()?.setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar()?.setDisplayShowHomeEnabled(true);
+        }
+
+
         setupBillingClient()
 
 
@@ -127,4 +136,11 @@ class PurchaseActivity : AppCompatActivity(), PurchasesUpdatedListener {
     }
 
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // handle arrow click here
+        if (item.getItemId() === R.id.home) {
+            finish() // close this activity and return to preview activity (if there is any)
+        }
+        return super.onOptionsItemSelected(item)
+    }
 }
