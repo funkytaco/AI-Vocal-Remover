@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
 
 
         binding!!.imageView.setOnClickListener({ v -> openImageChooser() })
-        binding!!.buttonUpload.setOnClickListener({ v -> uploadImage() })
+        binding!!.buttonUpload.setOnClickListener({ v -> uploadMp3() })
         binding!!.buttonProcess.setOnClickListener({v-> processImage()})
     }
 
@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_CODE_PICK_IMAGE -> {
+                REQUEST_CODE_PICK_MP3 -> {
                     selectedImageUri = data?.data
                     binding?.imageView?.setImageURI(selectedImageUri)
 
@@ -79,7 +79,7 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
         }
     }
 
-    private fun uploadImage() {
+    private fun uploadMp3() {
         if (selectedImageUri == null) {
             binding?.layoutRoot?.snackbar("Select an Image First")
             return
@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
 
         binding?.progressBar?.progress = 0
         val body = UploadRequestBody(file, "audio", this)
-        MyAPI().uploadImage(
+        MyAPI().uploadMp3(
                 MultipartBody.Part.createFormData(
                         "fileName",
                         file.name,
@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity(), UploadRequestBody.UploadCallback {
 
 
     companion object {
-        const val REQUEST_CODE_PICK_IMAGE = 101
+        const val REQUEST_CODE_PICK_MP3 = 101
     }
 
     override fun onProgressUpdate(percentage: Int) {

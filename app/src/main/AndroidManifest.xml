@@ -10,8 +10,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="replace"/>
     <uses-permission android:name="com.android.vending.BILLING" />
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!--partially optional-->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!--partially optional-->
+
 
     <application
         android:name=".utils_java.MyApplication"

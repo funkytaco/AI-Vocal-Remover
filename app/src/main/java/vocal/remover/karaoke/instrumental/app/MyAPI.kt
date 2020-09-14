@@ -20,7 +20,7 @@ interface MyAPI {
     @Multipart
 //    @POST("FileUploadServlet")
     @POST("FileTest")
-    fun uploadImage(
+    fun uploadMp3(
             @Part image: MultipartBody.Part,
             @Part("desc") desc: RequestBody
     ): Call<UploadResponse>
@@ -33,7 +33,7 @@ interface MyAPI {
     companion object {
         operator fun invoke(): MyAPI {
             return Retrofit.Builder()
-                    .baseUrl("https://161.35.71.36/")
+                    .baseUrl("https://aivocalremover.com/")
                   //  .client(okHttpClient)
                     .client(getUnsafeOkHttpClient())
                     .addConverterFactory(GsonConverterFactory.create())

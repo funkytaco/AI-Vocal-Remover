@@ -9,8 +9,8 @@ android {
         applicationId "vocal.remover.karaoke.instrumental.app"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 15
-        versionName '1.15'
+        versionCode 17
+        versionName '1.17'
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -64,7 +64,7 @@ dependencies {
     implementation 'com.android.billingclient:billing:2.0.3'
     implementation 'com.android.support:multidex:1.0.3'
 
-//    implementation 'com.appodeal.ads:sdk:2.6.5.+'
+
 
 }
 repositories {

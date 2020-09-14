@@ -278,7 +278,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
     private fun selectMp3File() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "audio/*"
-        startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
+        startActivityForResult(intent, REQUEST_CODE_PICK_MP3)
 
     }
 
@@ -288,7 +288,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
         Log.e("TAG", "onActivityResult: ghgff")
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                REQUEST_CODE_PICK_IMAGE -> {
+                REQUEST_CODE_PICK_MP3 -> {
                     selectedMp3Uri = data?.data
                     binding.tvFileName.text = getMp3FileName(selectedMp3Uri)
                     binding.btnExtractMp3.visibility = View.VISIBLE
@@ -384,7 +384,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
         binding?.progressBar?.progress = 0
         val body = UploadRequestBody(file, "audio", this)
         try {
-            MyAPI().uploadImage(
+            MyAPI().uploadMp3(
                     MultipartBody.Part.createFormData(
                             "fileName",
                             file.name,
@@ -475,7 +475,7 @@ public class HomeFragment : Fragment(), UploadRequestBody.UploadCallback, Reward
 
 
     companion object {
-        const val REQUEST_CODE_PICK_IMAGE = 101
+        const val REQUEST_CODE_PICK_MP3 = 101
         private const val TAG = "HomeFragment"
     }
 
